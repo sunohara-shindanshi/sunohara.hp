@@ -1,16 +1,21 @@
 'use server';
 
+import { Resend } from 'resend';
+
+import { buildContactEmail } from '@/lib/contactEmail';
 import { CONTACT_SUBJECTS } from '@/lib/services';
 import { siteConfig } from '@/lib/siteConfig';
 import type { ContactFieldName, ContactFormState } from '@/types/contact';
 
 /**
  * お問い合わせフォームの送信処理（Server Action 方式）。
+ * 内容はメール送信サービス Resend で通知メールとして送る。
  *
- * 送信先は未確定のため、実際のエンドポイントやキーはハードコードせず環境変数から読む。
- * - CONTACT_API_ENDPOINT : 送信先 URL（メール通知サービスや自前 API）
- * - CONTACT_API_KEY      : 送信先が認証を要求する場合のみ設定（任意）
- * どちらもサーバー側のみで使う値であり、NEXT_PUBLIC_ を付けてはいけない。
+ * 使用する環境変数（すべてサーバー側のみ。NEXT_PUBLIC_ を付けてはいけない）:
+ * - RESEND_API_KEY     : Resend の API キー（必須・秘匿）
+ * - CONTACT_FROM_EMAIL : 送信元アドレス（Resend で検証済みのドメイン。テストは onboarding@resend.dev）
+ * - CONTACT_TO_EMAIL   : 通知先アドレス（任意。未設定なら siteConfig.contactEmail を使う）
+ *   → 宛先を変えたいときはこの環境変数を書き換えるだけでよい。
  */
 
 const MAX_LENGTH: Record<ContactFieldName, number> = {
@@ -85,40 +90,41 @@ export async function submitContactForm(
     };
   }
 
-  // --- 送信 ---
-  const endpoint = process.env.CONTACT_API_ENDPOINT;
-  if (!endpoint) {
-    // 送信先が未設定の状態で「送信できた」と表示しない。
+  // --- メール送信（Resend） ---
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.CONTACT_FROM_EMAIL;
+  // 通知先は環境変数を優先し、無ければ siteConfig の既定値を使う（宛先変更は環境変数だけで完結）。
+  const toEmail = process.env.CONTACT_TO_EMAIL ?? siteConfig.contactEmail;
+
+  if (!apiKey || !fromEmail) {
+    // 送信の準備ができていない状態で「送信できた」と表示しない。
+    console.error('[contact] RESEND_API_KEY または CONTACT_FROM_EMAIL が未設定です。');
     return {
       status: 'error',
-      message: `現在フォームの送信先が未設定のため、送信を完了できませんでした。お急ぎの場合はお電話（${siteConfig.tel}）でご連絡ください。`,
+      message: `現在フォームからの送信を受け付けられない状態です。お手数ですが、お電話（${siteConfig.tel}）でご連絡ください。`,
       fieldErrors: {},
     };
   }
 
-  const apiKey = process.env.CONTACT_API_KEY;
+  const { subject, text, html } = buildContactEmail(values);
 
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
-      body: JSON.stringify({
-        ...values,
-        // 送信元サイトの識別用（送信先サービスの仕様に合わせてキー名は要調整）
-        site: siteConfig.name,
-        submittedAt: new Date().toISOString(),
-      }),
-      cache: 'no-store',
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: toEmail,
+      // 通知メールに返信すると、そのまま問い合わせ者へ返信できる
+      replyTo: values.email,
+      subject,
+      text,
+      html,
     });
 
-    if (!response.ok) {
-      throw new Error(`Contact endpoint responded with ${response.status}`);
+    if (error) {
+      throw new Error(`Resend responded with error: ${error.message}`);
     }
   } catch (error) {
-    console.error('[contact] 送信に失敗しました', error);
+    console.error('[contact] メール送信に失敗しました', error);
     return {
       status: 'error',
       message: `送信中に問題が発生しました。時間をおいて再度お試しいただくか、お電話（${siteConfig.tel}）でご連絡ください。`,

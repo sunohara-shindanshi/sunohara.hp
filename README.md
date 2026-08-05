@@ -19,6 +19,7 @@
 | 言語 | TypeScript |
 | スタイリング | Tailwind CSS（`tailwind.config.ts` の `theme.extend` でブランドカラー・フォントを定義）＋ `@tailwindcss/typography`（ブログ本文用） |
 | HTML サニタイズ | `sanitize-html`（microCMS のリッチエディタ本文を許可タグのみに制限） |
+| メール送信 | `resend`（お問い合わせフォームの通知メール） |
 | フォント | サイト全体を Noto Sans JP に統一（`next/font/google`・可変フォント）。見出し・本文・キャッチフレーズすべて同じ書体 |
 | 画像 | `next/image`（外部画像ドメインは `next.config.ts` の `images.remotePatterns` で許可） |
 | Lint | ESLint（`eslint-config-next`） |
@@ -73,8 +74,9 @@ npm run dev
 | `MICROCMS_API_KEY` | ブログ利用時 | microCMS の API キー（**サーバー側のみで使用する秘匿値**） |
 | `MICROCMS_BLOG_ENDPOINT` | ブログ利用時 | ブログ記事 API のエンドポイント名（設定仕様書の想定値：`blogs`） |
 | `MICROCMS_CATEGORY_ENDPOINT` | 任意 | カテゴリ API のエンドポイント名（設定仕様書の想定値：`categories`）。未設定でも記事一覧は表示できるが、カテゴリ絞り込みは表示されない |
-| `CONTACT_API_ENDPOINT` | フォーム利用時 | お問い合わせの送信先 URL |
-| `CONTACT_API_KEY` | 任意 | 送信先が認証を要求する場合のみ（`Authorization: Bearer <値>` で送信） |
+| `RESEND_API_KEY` | フォーム利用時 | メール送信サービス [Resend](https://resend.com) の API キー（**サーバー側のみで使用する秘匿値**） |
+| `CONTACT_FROM_EMAIL` | フォーム利用時 | 通知メールの送信元アドレス（Resend で検証済みドメインのアドレス。テストは `onboarding@resend.dev`） |
+| `CONTACT_TO_EMAIL` | 任意 | 通知先（届け先）アドレス。未設定なら `lib/siteConfig.ts` の `contactEmail`（`sunohara.shindanshi@gmail.com`）に届く。**宛先変更はこの 1 行だけ** |
 
 いずれも `NEXT_PUBLIC_` を付けていません。**API キー等の秘匿値に `NEXT_PUBLIC_` を付けるとブラウザに露出するため、付けないでください。**
 
@@ -94,7 +96,8 @@ npm run dev
 | microCMS 接続情報 | `.env.local` | 未設定の場合、`/blog` は「接続設定が未完了です」と表示します（架空の記事は表示しません）。 |
 | microCMS の画像ドメイン | `next.config.ts` | `images.microcms-assets.io` を許可しています。実際の配信ホスト名が異なる場合は修正してください。 |
 | 1ページあたりの記事数 | `lib/microcms.ts` の `BLOG_PAGE_SIZE` | 現在 9 件（3列 × 3行）。 |
-| フォーム送信先 | `.env.local` の `CONTACT_API_ENDPOINT` | 未設定の場合、フォームは「送信先が未設定」というエラーを表示します（成功したように見せる実装にはしていません）。 |
+| フォームの通知先メール | `.env.local` の `CONTACT_TO_EMAIL`（既定は `lib/siteConfig.ts` の `contactEmail`） | 問い合わせ内容の届け先。既定は `sunohara.shindanshi@gmail.com`。変更はこの 1 行のみ |
+| メール送信の設定 | `.env.local` の `RESEND_API_KEY` / `CONTACT_FROM_EMAIL` | Resend の API キーと送信元アドレス。未設定の間は、フォームは成功表示をせずエラーを表示します（「6. お問い合わせフォーム」参照） |
 | OGP 画像 | 未設定 | 画像素材が未確定のため、`openGraph.images` は設定していません。画像を用意したら `public/` に配置し、`lib/metadata.ts` の `openGraph` に `images` を追加してください。 |
 | 事業内容の補足文 | `lib/services.ts` の `detail` | 4 領域（財務・資金／組織・人事／営業・売上／IT・システム）の名称・サブタイトル・支援メニュー（`points`）は指定どおりです。`detail`（事業内容ページの説明文）は暫定のため、実際の支援内容に合わせて調整してください。 |
 
@@ -155,14 +158,20 @@ public/               静的アセット（現在は空）
 - 入力項目：お名前（必須）／会社名・屋号／メールアドレス（必須）／電話番号／ご相談内容（セレクト）／お問い合わせ内容（必須・複数行）
 - 「ご相談内容」の選択肢は `lib/services.ts` の `CONTACT_SUBJECTS` から生成しており、事業内容の 4 領域と順序・名称が常に一致します。
 - バリデーションはクライアント側（`required` / `type` / `maxLength`）とサーバー側（Server Action 内）の両方で実施しています。サーバー側では空文字・メール形式・選択肢の妥当性・文字数上限を検証します。
-- 送信先（`CONTACT_API_ENDPOINT`）へは以下の JSON を POST します。送信先サービスの仕様に合わせてキー名を調整してください。
 
-```json
-{
-  "name": "", "company": "", "email": "", "tel": "",
-  "subject": "", "message": "", "site": "", "submittedAt": ""
-}
-```
+### メール通知（Resend）
+
+- 送信内容は [Resend](https://resend.com) で**通知メール**として届きます（`app/contact/actions.ts` → `lib/contactEmail.ts`）。
+- **宛先**：`CONTACT_TO_EMAIL`（未設定なら `lib/siteConfig.ts` の `contactEmail` ＝ `sunohara.shindanshi@gmail.com`）。**アドレスが変わったら、この環境変数を書き換えるだけ**です。
+- 通知メールの**返信先（Reply-To）は問い合わせ者のメールアドレス**にしているため、届いたメールにそのまま返信すればお客様へ返信できます。
+- 件名は「【お問い合わせ】{ご相談内容} - {お名前}様」。本文はテキスト版と HTML 版の両方を送ります。
+- **セキュリティ**：HTML メールに埋め込むユーザー入力は `lib/contactEmail.ts` の `escapeHtml` で必ずエスケープしています（`<script>` などが実行される HTML インジェクションを防止）。
+- **設定手順**（初回のみ）
+  1. [Resend](https://resend.com) に登録し、API キーを発行 → `.env.local` の `RESEND_API_KEY` に設定。
+  2. 送信元アドレスを用意 → `CONTACT_FROM_EMAIL` に設定。
+     - 本番：Resend でドメインを検証し、そのドメインのアドレス（例：`noreply@あなたのドメイン`）。
+     - 動作確認だけ：`onboarding@resend.dev`（Resend のテスト用送信元。**アカウント所有者のメール宛にのみ**送信可）。
+  3. `RESEND_API_KEY` か `CONTACT_FROM_EMAIL` が未設定の間は、フォームは成功表示をせず「受け付けられない状態」のエラーを表示します（送信できていないのに成功と見せないため）。
 
 ---
 

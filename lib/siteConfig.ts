@@ -30,6 +30,12 @@ export const siteConfig = {
   },
   /** 電話番号（表示用） */
   tel: '080-6935-6869',
+  /**
+   * お問い合わせの通知先メールアドレス（既定値）。
+   * ※ 実際の送信先は環境変数 CONTACT_TO_EMAIL で上書きできる（将来アドレスが変わってもコード変更不要）。
+   *   環境変数が未設定のときのフォールバックとしてこの値を使う。
+   */
+  contactEmail: 'sunohara.shindanshi@gmail.com',
   /** 代表者
    *  TODO: 代表者氏名は未確定のためプレースホルダー。README「差し替えが必要な箇所」を参照。 */
   representative: {
