@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * 独自クラスは増やさず、原則 Tailwind のユーティリティと tailwind.config.ts の theme 拡張で対応する。
+ * ここに書くのは、ユーティリティでは表現できない最低限のベーススタイルのみ。
+ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    text-underline-offset: 0.2em;
+  }
+
+  ::selection {
+    background-color: theme('colors.brand.accentsoft');
+    color: theme('colors.brand.navy');
+  }
+}
+
+@layer components {
+  /*
+   * コラム（囲み枠）
+   * microCMS のリッチエディタで、囲みたい段落・テキストにカスタムclass「column」を付けると、
+   * 記事本文（.prose）内で四角い枠のボックスとして表示される。
+   * microCMS の実装ではテキストが <span class="column"> で、段落全体だと <p class="column"> で
+   * 出力されるため、その両方に効くようにしている（class の許可は lib/sanitizeHtml.ts）。
+   */
+  .prose :where(p, span).column {
+    display: block;
+    margin-block: 1.75em;
+    border: 1px solid theme('colors.brand.accentsoft');
+    border-radius: theme('borderRadius.2xl');
+    background-color: theme('colors.brand.bg');
+    padding: 1.25rem 1.5rem;
+    color: theme('colors.brand.ink');
+  }
+
+  /* 「コラム」ラベルを枠の左上に添える */
+  .prose :where(p, span).column::before {
+    content: 'コラム';
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    border-radius: 9999px;
+    background-color: theme('colors.brand.accent');
+    padding: 0.15rem 0.7rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff;
+  }
+
+  /*
+   * <span class="column"> を段落 <p> が包む場合、その <p> 側の余白で二重に空くのを防ぐ。
+   * （枠自体の margin は span.column 側で付けている）
+   */
+  .prose p:has(> span.column:only-child) {
+    margin: 0;
+  }
+}
