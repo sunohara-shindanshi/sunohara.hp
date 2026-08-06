@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import ArticleKeyPoints from '@/components/ArticleKeyPoints';
 import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
 import CtaSection from '@/components/CtaSection';
@@ -218,6 +219,9 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                 </p>
               ) : null}
 
+              {/* この記事でわかること（チェック付き箇条書き） */}
+              <ArticleKeyPoints items={post.keyPoints} />
+
               {/* 目次（本文の見出しから自動生成。開閉式で、クリックすると該当の見出しへ移動する） */}
               <TableOfContents items={toc} />
 
@@ -236,8 +240,10 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
               </div>
             </article>
 
-            {/* 内部リンク（関連記事・最近の投稿）。スクロール追従はさせず、末尾まで表示する */}
+            {/* 内部リンク（おすすめ・関連記事・最近の投稿）。スクロール追従はさせず、末尾まで表示する */}
             <aside className="space-y-6">
+              {/* microCMS で手動選択したおすすめの記事（articles）。未選択なら非表示 */}
+              <PostLinkList heading="おすすめの記事" posts={post.recommendedPosts} />
               <PostLinkList
                 heading={primaryCategory ? `${primaryCategory.name}の関連記事` : '関連記事'}
                 posts={relatedPosts}

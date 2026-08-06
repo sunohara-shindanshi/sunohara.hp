@@ -29,8 +29,14 @@ const REVALIDATE_SECONDS = 60;
 /** 一覧で取得するフィールド（本文 body は一覧で使わないため取得しない） */
 const BLOG_LIST_FIELDS = 'id,title,thumbnail,thumbnailAlt,category,excerpt,publishedAt';
 
-/** 記事詳細で取得するフィールド（一覧の項目 + 本文） */
-const BLOG_DETAIL_FIELDS = `${BLOG_LIST_FIELDS},body`;
+/**
+ * 記事詳細で取得するフィールド。
+ * 一覧の項目 + 本文 + 「この記事でわかること」(keyPoints) + おすすめの記事(articles)。
+ * ※ keyPoints / articles は microCMS の blogs 側に作るフィールド。存在しなくてもレスポンスに
+ *   含まれないだけでエラーにはならない（microCMS は fields に未知の名前を指定しても 200 を返す）。
+ *   フィールド名を変える場合はここと parseKeyPoints / fetchBlogPost の参照キーを合わせる。
+ */
+const BLOG_DETAIL_FIELDS = `${BLOG_LIST_FIELDS},body,keyPoints,articles`;
 
 /**
  * カテゴリでの絞り込み条件を組み立てる。
@@ -138,6 +144,10 @@ async function requestList(
   return json as unknown as MicroCMSListResponse<unknown>;
 }
 
+/**
+ * オブジェクト形式 API を取得する共通処理。
+ * リスト形式（contents 配列）と違い、フィールドがトップレベルに並んだオブジェクトを返す。
+ */
 function parseImage(value: unknown): MicroCMSImage | null {
   if (!isRecord(value)) return null;
   const { url, width, height } = value;
@@ -172,6 +182,37 @@ function parseCategories(value: unknown): Category[] {
   return values
     .map(parseCategory)
     .filter((category): category is Category => category !== null);
+}
+
+/** 繰り返しフィールドの 1 要素から表示テキストを取り出す（よくあるキー名を順に見る） */
+function extractKeyPointText(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+  if (isRecord(value)) {
+    for (const key of ['text', 'point', 'item', 'value', 'label']) {
+      const text = getString(value[key]);
+      if (text) return text.trim();
+    }
+  }
+  return '';
+}
+
+/**
+ * 「この記事でわかること」の箇条書きを配列に正規化する。
+ * microCMS 側の設定に幅があるため、次のどちらでも受け取れるようにしている。
+ *  1. 複数行テキスト（string）… 1 行 1 項目。行頭の記号（・- * • □ ✓ 等）は取り除く。
+ *  2. 繰り返しフィールド（配列）… 各要素の text 等を採用。
+ */
+function parseKeyPoints(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(extractKeyPointText).filter((text) => text.length > 0);
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(/\r?\n/)
+      .map((line) => line.replace(/^[\s　]*[-*・•‐–—□☑✓✔]?[\s　]*/, '').trim())
+      .filter((line) => line.length > 0);
+  }
+  return [];
 }
 
 /**
@@ -265,6 +306,8 @@ export async function fetchBlogPost(id: string): Promise<BlogPost | null> {
     `https://${config.serviceDomain}.microcms.io/api/v1/${config.blogEndpoint}/${encodeURIComponent(id)}`,
   );
   url.searchParams.set('fields', BLOG_DETAIL_FIELDS);
+  // articles（おすすめ記事）は参照先の記事、さらにその中のカテゴリ参照まで展開したいので depth=2。
+  url.searchParams.set('depth', '2');
 
   let response: Response;
   try {
@@ -287,9 +330,17 @@ export async function fetchBlogPost(id: string): Promise<BlogPost | null> {
   const listItem = parseListItem(json);
   if (!listItem) return null;
 
+  // おすすめの記事（記事側の複数参照フィールド articles）。表示中の記事自身は除外する。
+  const recommendedPosts = (isRecord(json) && Array.isArray(json.articles) ? json.articles : [])
+    .map(parseListItem)
+    .filter((item): item is BlogListItem => item !== null && item.id !== listItem.id)
+    .slice(0, RECOMMENDED_LIMIT);
+
   return {
     ...listItem,
     body: (isRecord(json) && getString(json.body)) || '',
+    keyPoints: isRecord(json) ? parseKeyPoints(json.keyPoints) : [],
+    recommendedPosts,
   };
 }
 
@@ -324,6 +375,9 @@ export async function fetchLinkedPosts({
     .filter((post): post is BlogListItem => post !== null && post.id !== excludeId)
     .slice(0, limit);
 }
+
+/** 記事詳細で「おすすめの記事」として表示する上限件数 */
+export const RECOMMENDED_LIMIT = 3;
 
 /** sitemap.xml 用に、公開中の記事の ID と最終更新日をまとめて取得する */
 export async function fetchBlogSitemapEntries(): Promise<BlogSitemapEntry[]> {

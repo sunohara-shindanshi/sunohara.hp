@@ -184,9 +184,18 @@ public/               静的アセット（現在は空）
 | API | 種類 | フィールド |
 |---|---|---|
 | カテゴリ（`categories`） | リスト形式 | `name`（テキスト・必須）／`slug`（テキスト・必須・重複禁止）／`description`（複数行・任意）／`order`（数字・任意） |
-| ブログ記事（`blogs`） | リスト形式 | `title`／`thumbnail`（画像）／`thumbnailAlt`（テキスト）／`category`（コンテンツ参照）／`excerpt`（複数行）／`body`（リッチエディタ）／`publishedAt`（組み込み） |
+| ブログ記事（`blogs`） | リスト形式 | `title`／`thumbnail`（画像）／`thumbnailAlt`（テキスト・任意）／`category`（コンテンツ参照）／`excerpt`（複数行）／`body`（リッチエディタ）／`publishedAt`（組み込み）／`keyPoints`（「この記事でわかること」・下記参照）／`articles`（おすすめの記事・下記参照） |
 
 作成後、`.env.local` にサービスドメイン・API キー・各エンドポイント名を設定してください。
+
+**「おすすめの記事」（記事ごと）について**
+
+- 各記事の詳細ページのサイドバー先頭に「おすすめの記事」欄を表示します（**記事ごとに手動で選んだ記事**）。
+- microCMS の `blogs` に、**記事（blogs）への複数選択のコンテンツ参照フィールド `articles`**（参照上限 3）を作り、その記事に載せたいおすすめ記事を選んでください。
+- **未選択の記事では欄ごと非表示**になります。表示中の記事自身が選ばれていても自動で除外します。
+- フィールド名を `articles` 以外にする場合は、`lib/microcms.ts` の `BLOG_DETAIL_FIELDS` と `fetchBlogPost` の参照キー（`json.articles`）を合わせてください。
+
+おすすめの記事は**記事ごとに設定**する方式のみです（サイト共通の一覧欄は設けていません）。設定しない記事では欄が非表示になるだけで問題ありません。
 
 **実 API に合わせた実装上の注意（設定仕様書との差分）**
 
@@ -228,6 +237,15 @@ public/               静的アセット（現在は空）
   - 記事一覧へ戻る／お問い合わせ／事業内容へのリンク
 - 構造化データとして `BlogPosting` も出力しています（`headline` / `datePublished` / `articleSection` など）。
 - OGP は `og:type=article` とし、サムネイルがある場合は `og:image` に設定します。`description` は `excerpt` から生成します。
+
+### この記事でわかること
+
+- 記事詳細の冒頭（抜粋の下・目次の上）に、**チェック付きの箇条書き**で「この記事でわかること」を表示します（`components/ArticleKeyPoints.tsx`）。
+- microCMS の `blogs` に **`keyPoints`** フィールドを追加してください。次のどちらの形でも動きます（`lib/microcms.ts` の `parseKeyPoints`）。
+  - **複数行テキスト**（推奨）：1 行 = 1 項目。行頭に `・` や `-` を付けても自動で取り除きます。
+  - **繰り返しフィールド**：各要素の `text`（等）を 1 項目として扱います。
+- **未設定・未入力の記事では欄ごと非表示**になります（既存記事に影響しません）。
+- フィールド名を `keyPoints` 以外にする場合は、`lib/microcms.ts` の `BLOG_DETAIL_FIELDS` と `parseKeyPoints` の参照キーを合わせてください。
 
 ### 目次
 

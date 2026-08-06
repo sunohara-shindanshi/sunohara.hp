@@ -56,6 +56,17 @@ export type BlogListItem = {
  */
 export type BlogPost = BlogListItem & {
   body: string;
+  /**
+   * 「この記事でわかること」の箇条書き（各要素が 1 項目）。
+   * microCMS 側は「複数行テキスト（1 行 1 項目）」または「繰り返しフィールド」を想定。
+   * 未設定・未入力なら空配列。
+   */
+  keyPoints: string[];
+  /**
+   * この記事に手動で紐づけた「おすすめの記事」。
+   * microCMS の blogs 側にある複数参照フィールド `articles` から取得する。未選択なら空配列。
+   */
+  recommendedPosts: BlogListItem[];
 };
 
 /** 記事本文から生成する目次の 1 項目 */
@@ -101,3 +112,4 @@ export type BlogListResult =
 export type CategoryListResult =
   | { status: 'ok'; categories: Category[] }
   | { status: 'not-configured' };
+
