@@ -10,7 +10,7 @@
  * TODO: 実際のドメインが決まったら、この定数だけを書き換える。
  * （sitemap / robots / canonical / OGP はすべてここを参照している）
  */
-export const SITE_URL = 'https://example.com';
+export const SITE_URL = 'https://www.sunohara-cs.com';
 
 const address = {
   region: '東京都',
