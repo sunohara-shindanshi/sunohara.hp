@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 
 import Footer from '@/components/Footer';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import Header from '@/components/Header';
 import { SITE_URL, siteConfig } from '@/lib/siteConfig';
 
@@ -42,6 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://images.microcms-assets.io" crossOrigin="" />
         <link rel="dns-prefetch" href="https://images.microcms-assets.io" />
       </head>
+      {/* Google Analytics（本番のみ読み込み） */}
+      <GoogleAnalytics />
       <body className="flex min-h-screen flex-col bg-brand-bg font-sans text-brand-ink antialiased">
         <a
           href="#main"

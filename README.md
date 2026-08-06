@@ -322,6 +322,13 @@ public/               静的アセット（現在は空）
 - `robots.txt` と `sitemap.xml` は `app/robots.ts` / `app/sitemap.ts` で生成しています。sitemap には固定 5 ページ（`NAV_ITEMS` から自動生成）に加えて、**microCMS の記事 URL** も含めます（記事の更新日を `lastModified` に設定）。microCMS に到達できない場合は固定ページのみを出力し、ビルドは失敗させません。
   - ※ 記事が 100 件を超える場合は sitemap 側でページングが必要です（`lib/microcms.ts` の `fetchBlogSitemapEntries` にコメントあり）。
 
+### アクセス解析（Google Analytics）
+
+- GA4（gtag.js）を `components/GoogleAnalytics.tsx` で読み込み、`app/layout.tsx` から全ページに適用しています。`next/script` の `afterInteractive` で読み込むため、表示速度への影響を抑えています。
+- 測定 ID は `NEXT_PUBLIC_GA_ID`（未設定ならコンポーネント内の既定値 `G-VY959R184H`）。**測定 ID は公開値**なので `NEXT_PUBLIC_` で問題ありません（秘匿情報ではない）。
+- **本番ビルド（`npm run build` / `npm run start`）でのみ読み込みます。** 開発時（`npm run dev`）は計測データを汚さないよう読み込みません。
+- ページビューは、GA4 の「拡張計測（ブラウザ履歴イベントに基づくページ変更）」が有効なら、Next.js のクライアント遷移でも自動で計測されます（GA4 の既定で有効）。
+
 ---
 
 ## 9. デザインの方針
