@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Container from '@/components/Container';
 import ContactForm from '@/components/ContactForm';
 import PageHeader from '@/components/PageHeader';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
 import { siteConfig, telHref } from '@/lib/siteConfig';
 
@@ -45,6 +47,10 @@ export default function ContactPage() {
               </p>
               <a
                 href={telHref}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.CONTACT_PAGE_TEL,
+                  link_url: telHref,
+                })}
                 className="mt-4 inline-flex rounded font-display text-2xl font-bold tracking-jp text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
                 {siteConfig.tel}

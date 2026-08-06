@@ -67,6 +67,29 @@ export const siteConfig = {
     '口だけでは、会社は変わらない。私たちが大切にしているのは「超・現場主義」。提案して終わりではなく、現場に入り込み、実行まで一緒に手を動かします。事業再生、AI・IT活用、バックオフィス整備。東京都葛飾区を拠点に、御社が自走できる状態を目指して支援します。',
 } as const;
 
+/**
+ * 外部発信（SNS 等）のリンク。
+ *
+ * url に値を入れると「基本情報」ページに自動でリンクが表示され、
+ * クリックが cta_click（cta_name = ここで指定した ctaName）として計測される。
+ * SNS を増やすときは、この配列に 1 件足すだけでよい（コンポーネントの修正は不要）。
+ * ※ url が null のものは表示されない。
+ */
+export type SocialLink = {
+  id: string;
+  /** 画面に表示する名称 */
+  label: string;
+  /** プロフィール URL。未開設のうちは null。 */
+  url: string | null;
+  /** 計測上の識別子（GA4 の cta_name） */
+  ctaName: string;
+};
+
+export const SOCIAL_LINKS: readonly SocialLink[] = [
+  { id: 'note', label: 'note', url: null, ctaName: 'profile_note' },
+  { id: 'x', label: 'X（旧Twitter）', url: null, ctaName: 'profile_x' },
+];
+
 /** tel: リンク用のハイフンなし電話番号（表示用の tel から機械的に生成する） */
 export const telHref = `tel:${siteConfig.tel.replace(/-/g, '')}`;
 

@@ -122,7 +122,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {result.posts.map((post) => (
                   <li key={post.id}>
-                    <BlogCard post={post} />
+                    <BlogCard post={post} listName="blog_list" />
                   </li>
                 ))}
               </ul>

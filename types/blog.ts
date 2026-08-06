@@ -24,6 +24,19 @@ export type Category = {
 };
 
 /**
+ * タグ（任意）。
+ *
+ * microCMS 側にタグ用のフィールド（tags）を作った場合に使う。
+ * 未設定のうちは常に空配列になり、表示・計測とも自動的に無効化される。
+ * 参照フィールド（{ id, name, slug }）でも、テキストの繰り返しフィールドでも受け取れる。
+ */
+export type Tag = {
+  id: string;
+  name: string;
+  slug?: string;
+};
+
+/**
  * ブログ記事一覧（blogs API）の 1 件。
  *
  * ※ microCMS 側では title / thumbnail / thumbnailAlt / category / excerpt を必須設定にする想定だが、
@@ -43,9 +56,16 @@ export type BlogListItem = {
    *   単一参照に変更された場合も表示が壊れないよう、取得時に配列へ正規化している。
    */
   categories: Category[];
+  /** タグ。microCMS に tags フィールドが無い場合は空配列。 */
+  tags: Tag[];
   excerpt: string;
   /** ISO 8601 形式の公開日時（microCMS の組み込みフィールド） */
   publishedAt?: string;
+  /**
+   * 最終更新日時（revisedAt があればそれ、無ければ updatedAt）。
+   * 記事の鮮度（updated_date / is_updated）の計測に使う。
+   */
+  updatedAt?: string;
 };
 
 /**
@@ -56,6 +76,11 @@ export type BlogListItem = {
  */
 export type BlogPost = BlogListItem & {
   body: string;
+  /**
+   * 執筆者名。microCMS に author フィールドが無い場合は undefined
+   * （計測では lib/siteConfig.ts の代表者名を既定値として使う）。
+   */
+  author?: string;
   /**
    * 「この記事でわかること」の箇条書き（各要素が 1 項目）。
    * microCMS 側は「複数行テキスト（1 行 1 項目）」または「繰り返しフィールド」を想定。

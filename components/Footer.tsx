@@ -2,6 +2,8 @@ import Link from 'next/link';
 
 import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { SERVICES } from '@/lib/services';
 import { NAV_ITEMS, siteConfig, telHref } from '@/lib/siteConfig';
 
@@ -29,6 +31,11 @@ export default function Footer() {
                 TEL:{' '}
                 <a
                   href={telHref}
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.FOOTER_TEL,
+                    cta_location: CTA_LOCATIONS.FOOTER,
+                    link_url: telHref,
+                  })}
                   className="rounded underline underline-offset-4 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accentsoft"
                 >
                   {siteConfig.tel}
@@ -62,6 +69,11 @@ export default function Footer() {
             </ul>
             <Link
               href="/contact"
+              {...analyticsAttributes('cta_click', {
+                cta_name: CTA_NAMES.FOOTER_CONTACT,
+                cta_location: CTA_LOCATIONS.FOOTER,
+                link_url: '/contact',
+              })}
               className="mt-6 inline-flex rounded-full bg-brand-accent px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-white hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accentsoft"
             >
               お問い合わせはこちら

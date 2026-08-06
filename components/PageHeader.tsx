@@ -1,6 +1,8 @@
 import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
 import PrimaryCta from '@/components/PrimaryCta';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { siteConfig, telHref } from '@/lib/siteConfig';
 
 /** 下層ページ共通の見出し帯。ページごとに構造を分岐させない。 */
@@ -41,9 +43,22 @@ export default function PageHeader({
 
         {/* ファーストビューの CTA（主要ボタン + 電話番号） */}
         <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-          {cta ? <PrimaryCta href={cta.href}>{cta.label}</PrimaryCta> : null}
+          {cta ? (
+            <PrimaryCta
+              href={cta.href}
+              ctaName={CTA_NAMES.PAGE_HEADER_CONTACT}
+              ctaLocation={CTA_LOCATIONS.PAGE_HEADER}
+            >
+              {cta.label}
+            </PrimaryCta>
+          ) : null}
           <a
             href={telHref}
+            {...analyticsAttributes('cta_click', {
+              cta_name: CTA_NAMES.PAGE_HEADER_TEL,
+              cta_location: CTA_LOCATIONS.PAGE_HEADER,
+              link_url: telHref,
+            })}
             className="rounded text-sm text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
           >
             お電話：

@@ -6,6 +6,9 @@ import Container from '@/components/Container';
 import CtaSection from '@/components/CtaSection';
 import PageHeader from '@/components/PageHeader';
 import SectionHeading from '@/components/SectionHeading';
+import SocialLinks from '@/components/SocialLinks';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
 import { SERVICES } from '@/lib/services';
 import { siteConfig, telHref } from '@/lib/siteConfig';
@@ -79,6 +82,23 @@ export default function AboutPage() {
                   {siteConfig.representative.title}　{siteConfig.representative.name}
                 </span>
               </p>
+
+              {/* 代表者からの導線（お問い合わせ / 外部発信）。
+                  SNS は lib/siteConfig.ts の SOCIAL_LINKS に URL を入れると自動で表示される。 */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link
+                  href="/contact"
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.PROFILE_CONTACT,
+                    cta_location: CTA_LOCATIONS.PROFILE,
+                    link_url: '/contact',
+                  })}
+                  className="inline-flex rounded-full bg-brand-sun px-6 py-3 text-sm font-bold text-brand-navy shadow-panel transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                >
+                  代表に相談する
+                </Link>
+                <SocialLinks />
+              </div>
             </div>
 
             <aside className="h-fit rounded-2xl border border-brand-line bg-brand-surface p-7 shadow-panel">

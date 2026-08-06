@@ -1,5 +1,7 @@
 import Container from '@/components/Container';
 import PrimaryCta from '@/components/PrimaryCta';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES, type CtaName } from '@/lib/analytics/ctaNames';
 import { siteConfig, telHref } from '@/lib/siteConfig';
 
 /**
@@ -15,11 +17,17 @@ export default function CtaSection({
   lead,
   buttonLabel,
   buttonHref = '/contact',
+  ctaName = CTA_NAMES.SECTION_CONTACT,
 }: {
   heading: string;
   lead: string;
   buttonLabel: string;
   buttonHref?: string;
+  /**
+   * 計測上の識別子。ページごとに固有の値を渡すと、
+   * GA4 で「どのページの末尾 CTA が押されたか」を区別できる。
+   */
+  ctaName?: CtaName;
 }) {
   const { online, durationNote } = siteConfig.consultation;
   // 事実として確認できている訴求のみを並べる（費用・締切などは記載しない）
@@ -33,13 +41,20 @@ export default function CtaSection({
           <p className="mt-4 text-sm leading-loose text-brand-accentsoft sm:text-base">{lead}</p>
 
           <div className="mt-8 flex justify-center">
-            <PrimaryCta href={buttonHref}>{buttonLabel}</PrimaryCta>
+            <PrimaryCta href={buttonHref} ctaName={ctaName} ctaLocation={CTA_LOCATIONS.SECTION}>
+              {buttonLabel}
+            </PrimaryCta>
           </div>
 
           <p className="mt-6 text-sm text-brand-accentsoft">
             お急ぎの方はお電話でも：
             <a
               href={telHref}
+              {...analyticsAttributes('cta_click', {
+                cta_name: CTA_NAMES.SECTION_TEL,
+                cta_location: CTA_LOCATIONS.SECTION,
+                link_url: telHref,
+              })}
               className="ml-1 rounded font-bold text-white underline underline-offset-4 hover:text-brand-sun focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-sun"
             >
               {siteConfig.tel}

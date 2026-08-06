@@ -188,6 +188,17 @@ public/               静的アセット（現在は空）
 
 作成後、`.env.local` にサービスドメイン・API キー・各エンドポイント名を設定してください。
 
+**任意フィールド（作れば自動で使われるもの）**
+
+次の 2 つは `blogs` に無くても動きます。作成すると、追加の設定なしに表示・計測へ反映されます。
+
+| フィールド | 型 | 効果 |
+|---|---|---|
+| `tags` | 複数選択のコンテンツ参照 または テキストの繰り返し | 記事下部にタグが表示され、解析の `article_tags` に反映されます |
+| `author` | テキスト または コンテンツ参照（`name` を持つもの） | 解析の `author` に反映されます（未作成なら代表者名） |
+
+※ 記事 URL は microCMS のコンテンツ ID をそのまま使う方針のため、**`slug` フィールドは使いません**。アクセス解析の `article_slug` は記事 URL（`/blog/{id}`）から自動取得しており、値はコンテンツ ID と同じになります。
+
 **「おすすめの記事」（記事ごと）について**
 
 - 各記事の詳細ページのサイドバー先頭に「おすすめの記事」欄を表示します（**記事ごとに手動で選んだ記事**）。
@@ -211,7 +222,7 @@ public/               静的アセット（現在は空）
 - 型は `types/blog.ts` に定義しています（`any` は使用していません）。
   - `BlogListItem`：一覧で使う項目。`thumbnail` と `category` は **null 許容**にしています。microCMS 側では必須設定の想定ですが、スキーマ変更や参照先削除で欠けても表示が壊れないようにするためです（欠けた場合はモチーフ画像／カテゴリ非表示にフォールバック）。
   - `BlogPost`：`BlogListItem` + `body`。記事詳細ページを作るときに使います。
-- 一覧では `fields` パラメータで `id,title,thumbnail,thumbnailAlt,category,excerpt,publishedAt` のみを取得し、**本文 `body` は取得していません**（不要なデータを送受信しないため）。
+- 一覧では `fields` パラメータで `id,title,thumbnail,thumbnailAlt,category,tags,excerpt,publishedAt,revisedAt,updatedAt` のみを取得し、**本文 `body` は取得していません**（不要なデータを送受信しないため）。このため、一覧クリックの計測には `word_count` / `reading_time` が含まれません。
 - **ページネーション**：`limit` / `offset` によるページ番号方式を `/blog?page=2` の形で実装しています（1 ページ 9 件、`lib/microcms.ts` の `BLOG_PAGE_SIZE`）。各ページが個別 URL を持ち JavaScript も不要なため暫定でこの方式にしています。「もっと見る」方式に変更する場合は `components/Pagination.tsx` を差し替えてください。
 - **カテゴリ絞り込み**：`/blog?category={slug}` で `filters=category[equals]{カテゴリID}` を使って絞り込みます。slug からカテゴリ ID への解決はカテゴリ API の取得結果から行っています。`MICROCMS_CATEGORY_ENDPOINT` が未設定の場合は絞り込み UI を表示せず、記事一覧のみを表示します。
 - 表示状態は次のとおりです。
@@ -322,12 +333,32 @@ public/               静的アセット（現在は空）
 - `robots.txt` と `sitemap.xml` は `app/robots.ts` / `app/sitemap.ts` で生成しています。sitemap には固定 5 ページ（`NAV_ITEMS` から自動生成）に加えて、**microCMS の記事 URL** も含めます（記事の更新日を `lastModified` に設定）。microCMS に到達できない場合は固定ページのみを出力し、ビルドは失敗させません。
   - ※ 記事が 100 件を超える場合は sitemap 側でページングが必要です（`lib/microcms.ts` の `fetchBlogSitemapEntries` にコメントあり）。
 
-### アクセス解析（Google Analytics）
+### アクセス解析（GA4 + Google Tag Manager）
 
-- GA4（gtag.js）を `components/GoogleAnalytics.tsx` で読み込み、`app/layout.tsx` から全ページに適用しています。`next/script` の `afterInteractive` で読み込むため、表示速度への影響を抑えています。
-- 測定 ID は `NEXT_PUBLIC_GA_ID`（未設定ならコンポーネント内の既定値 `G-VY959R184H`）。**測定 ID は公開値**なので `NEXT_PUBLIC_` で問題ありません（秘匿情報ではない）。
-- **本番ビルド（`npm run build` / `npm run start`）でのみ読み込みます。** 開発時（`npm run dev`）は計測データを汚さないよう読み込みません。
-- ページビューは、GA4 の「拡張計測（ブラウザ履歴イベントに基づくページ変更）」が有効なら、Next.js のクライアント遷移でも自動で計測されます（GA4 の既定で有効）。
+計測は **コード → `dataLayer` → GTM → GA4** の順に流れます。コードから GA4（gtag）へ直接送信はしません。
+
+- **設定・運用の詳細は [`docs/analytics.md`](docs/analytics.md) にまとめています**（イベント一覧・パラメータ一覧・GTM の設定手順・動作確認方法・イベント追加手順）。
+- 読み込みは `components/analytics/GoogleTagManager.tsx`、計測基盤は `components/analytics/AnalyticsProvider.tsx`（`app/layout.tsx` から全ページに適用）。`next/script` の `afterInteractive` で読み込むため、表示速度への影響を抑えています。
+- ID は環境変数で管理します。`NEXT_PUBLIC_GTM_ID`（GTM コンテナ ID）と `NEXT_PUBLIC_GA_ID`（GA4 測定 ID）。**どちらも HTML に出る公開値**なので `NEXT_PUBLIC_` で問題ありません（秘匿情報ではない）。GA4 の測定 ID は `dataLayer` 経由で GTM に渡しており、GTM 側にもベタ書きしません。
+- **本番ビルド（`npm run build` / `npm run start`）でのみ読み込みます。** 開発時（`npm run dev`）は計測データを汚さないよう読み込みません（`NEXT_PUBLIC_ANALYTICS_DEBUG=true` で一時的に有効化・ログ出力できます）。
+- 計測しているイベント：`page_view` / `scroll_25`〜`scroll_100` / `cta_click` / `related_article_click` / `external_link_click` / `pdf_download` / `article_select` / `category_select` / `tag_select` / `form_view` / `form_start` / `form_submit` / `toc_click`。
+- 記事の情報は記事データから自動付与されるため、**記事を追加してもコード修正は不要**です。記事ページで発生するすべてのイベント（CTA クリック・関連記事クリック・目次クリックなど）に付きます。
+
+  | パラメータ | 内容 |
+  | --- | --- |
+  | `article_id` / `article_slug` | コンテンツ ID と、記事 URL（`/blog/{id}`）から取得した slug。URL がコンテンツ ID そのままの設計のため**両者は同じ値**になります（GA4 の `page_path` と突き合わせやすいよう別パラメータとして送っています） |
+  | `article_title` / `article_category` / `article_tags` | タイトル・カテゴリ・タグ |
+  | `publish_date` / `publish_year` | 公開日（`YYYY-MM-DD`）と公開年（数値） |
+  | `updated_date` / `is_updated` | 更新日と、公開後に更新されたか（**同日は `false`**） |
+  | `word_count` / `reading_time` | 本文の実文字数と推定読了時間（分／日本語 500 文字・分で算出） |
+  | `author` | 執筆者（microCMS の `author`、無ければ代表者名） |
+
+  ※ `word_count` / `reading_time` は本文を取得する記事ページのイベントのみに付きます（一覧クリックには付きません）。
+- **目次クリック**（`toc_click`）は `toc_text` / `toc_anchor` / `toc_level` を送ります。どの見出しが求められているかが分かるため、記事の構成改善やリライトの判断材料になります。
+- 分析の切り口（記事別の CTA 率、リライト効果、文字数と読了率の相関、目次クリックの傾向など）は [`docs/analytics.md`](docs/analytics.md) の「Looker Studio での分析例」にまとめています。
+- **GA4 のカスタムディメンションに登録するのは 9 個 + 指標 1 個だけ**です。送信しているパラメータをすべて登録すると、固有値の多いもの（外部リンク URL・見出しテキストなど）がレポートの精度を下げます。記事ごとの分析は**組み込みの「ページパス」「ページタイトル」**を軸にし、カスタムディメンションはそこに属性を足す用途に絞っています。登録すべき一覧と、登録しないものの理由は [`docs/analytics.md`](docs/analytics.md) の「GA4 で登録するカスタムディメンション」を参照してください（登録しないパラメータも送信は続けているため、必要になった時点で登録できます）。
+- ⚠ GA4 の「拡張計測機能」のうち **ページビュー数・スクロール数・離脱クリック・ファイルのダウンロードは オフ** にしてください（本実装と二重計測になります）。
+- ⚠ イベントを増やしても **GTM の設定変更は不要**です（イベント名に `{{Event}}`、トリガーに「`gtm.` 以外のすべて」を使っているため）。GTM の作業が必要になるのは**新しいパラメータを追加したとき**だけです。
 
 ---
 

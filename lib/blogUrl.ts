@@ -15,6 +15,24 @@ export function buildBlogHref({
   return query ? `/blog?${query}` : '/blog';
 }
 
+/**
+ * 記事詳細ページのパスを組み立てる唯一の場所。
+ * カード・関連記事リンク・canonical URL・構造化データがすべてこの関数を使う。
+ */
+export function buildBlogPostHref(id: string): string {
+  return `/blog/${id}`;
+}
+
+/**
+ * 記事 URL の末尾を slug として取り出す。
+ * アクセス解析の article_slug は「URL から自動取得」する方針のため、
+ * URL の組み立て（buildBlogPostHref）と対にしてここに置いている。
+ * URL の形を変えたときも、計測値が自動で追従する。
+ */
+export function extractBlogPostSlug(href: string): string {
+  return href.split(/[?#]/)[0].split('/').filter(Boolean).pop() ?? '';
+}
+
 /** クエリ文字列のページ番号を 1 以上の整数に正規化する（不正値は 1 とみなす） */
 export function parsePageNumber(value: string | string[] | undefined): number {
   const raw = Array.isArray(value) ? value[0] : value;

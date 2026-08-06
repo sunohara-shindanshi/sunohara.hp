@@ -7,6 +7,7 @@ import type {
   CategoryListResult,
   MicroCMSImage,
   MicroCMSListResponse,
+  Tag,
 } from '@/types/blog';
 
 /**
@@ -26,17 +27,25 @@ export const BLOG_PAGE_SIZE = 9;
 /** ISR: 取得結果のキャッシュ再検証間隔（秒） */
 const REVALIDATE_SECONDS = 60;
 
-/** 一覧で取得するフィールド（本文 body は一覧で使わないため取得しない） */
-const BLOG_LIST_FIELDS = 'id,title,thumbnail,thumbnailAlt,category,excerpt,publishedAt';
+/**
+ * 一覧で取得するフィールド（本文 body は一覧で使わないため取得しない）。
+ * ※ tags は任意フィールド。microCMS 側に存在しない間はレスポンスに含まれないだけで、
+ *   エラーにはならない（存在すれば計測の article_tags として自動的に使われる）。
+ * ※ revisedAt / updatedAt は日時 2 つだけで軽いため、一覧でも取得している
+ *   （一覧クリックの計測で updated_date / is_updated を送るため）。
+ */
+const BLOG_LIST_FIELDS =
+  'id,title,thumbnail,thumbnailAlt,category,tags,excerpt,publishedAt,revisedAt,updatedAt';
 
 /**
  * 記事詳細で取得するフィールド。
- * 一覧の項目 + 本文 + 「この記事でわかること」(keyPoints) + おすすめの記事(articles)。
+ * 一覧の項目 + 本文 + 「この記事でわかること」(keyPoints) + おすすめの記事(articles)
+ * + 執筆者（author。任意フィールド）。
  * ※ keyPoints / articles は microCMS の blogs 側に作るフィールド。存在しなくてもレスポンスに
  *   含まれないだけでエラーにはならない（microCMS は fields に未知の名前を指定しても 200 を返す）。
  *   フィールド名を変える場合はここと parseKeyPoints / fetchBlogPost の参照キーを合わせる。
  */
-const BLOG_DETAIL_FIELDS = `${BLOG_LIST_FIELDS},body,keyPoints,articles`;
+const BLOG_DETAIL_FIELDS = `${BLOG_LIST_FIELDS},body,keyPoints,articles,author`;
 
 /**
  * カテゴリでの絞り込み条件を組み立てる。
@@ -184,6 +193,36 @@ function parseCategories(value: unknown): Category[] {
     .filter((category): category is Category => category !== null);
 }
 
+/**
+ * tags フィールドを配列に正規化する（任意フィールド。無ければ空配列）。
+ * 参照フィールド（{ id, name, slug }）でも、文字列の配列でも受け取れるようにしている。
+ */
+function parseTags(value: unknown): Tag[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((item): Tag[] => {
+    if (typeof item === 'string') {
+      const name = item.trim();
+      return name ? [{ id: name, name }] : [];
+    }
+    if (!isRecord(item)) return [];
+
+    const name = getString(item.name) ?? getString(item.label) ?? getString(item.title);
+    if (!name) return [];
+    return [{ id: getString(item.id) ?? name, name, slug: getString(item.slug) }];
+  });
+}
+
+/**
+ * author フィールドから執筆者名を取り出す（任意フィールド）。
+ * テキストでも、参照フィールド（{ name }）でも受け取れる。
+ */
+function parseAuthor(value: unknown): string | undefined {
+  if (typeof value === 'string') return value.trim() || undefined;
+  if (isRecord(value)) return getString(value.name)?.trim() || undefined;
+  return undefined;
+}
+
 /** 繰り返しフィールドの 1 要素から表示テキストを取り出す（よくあるキー名を順に見る） */
 function extractKeyPointText(value: unknown): string {
   if (typeof value === 'string') return value.trim();
@@ -231,8 +270,11 @@ function parseListItem(value: unknown): BlogListItem | null {
     thumbnail: parseImage(value.thumbnail),
     thumbnailAlt: getString(value.thumbnailAlt) ?? '',
     categories: parseCategories(value.category),
+    tags: parseTags(value.tags),
     excerpt: getString(value.excerpt) ?? '',
     publishedAt: getString(value.publishedAt),
+    // 更新日は revisedAt（コンテンツの実質的な更新日時）を優先する
+    updatedAt: getString(value.revisedAt) ?? getString(value.updatedAt),
   };
 }
 
@@ -340,6 +382,7 @@ export async function fetchBlogPost(id: string): Promise<BlogPost | null> {
     ...listItem,
     body: (isRecord(json) && getString(json.body)) || '',
     keyPoints: isRecord(json) ? parseKeyPoints(json.keyPoints) : [],
+    author: isRecord(json) ? parseAuthor(json.author) : undefined,
     recommendedPosts,
   };
 }

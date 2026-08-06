@@ -3,11 +3,15 @@
 // フォームの送信状態を扱う（useActionState / useRef / useEffect）ため Client Component。
 // 実際の送信処理は Server Action（app/contact/actions.ts）側で行う。
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect } from 'react';
 
+import { useFormTracking } from '@/components/analytics/useFormTracking';
 import { submitContactForm } from '@/app/contact/actions';
 import { CONTACT_SUBJECTS } from '@/lib/services';
 import { initialContactFormState } from '@/types/contact';
+
+/** 計測上のフォーム名（GA4 の form_name） */
+const FORM_NAME = 'contact';
 
 /** 入力欄の共通スタイル（同じ役割のクラスを個別に定義しないよう 1 箇所にまとめる） */
 const fieldClassName =
@@ -32,17 +36,29 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 
 export default function ContactForm() {
   const [state, formAction, isPending] = useActionState(submitContactForm, initialContactFormState);
-  const formRef = useRef<HTMLFormElement>(null);
+  // 表示（form_view）・入力開始（form_start）・送信成功（form_submit）の計測。
+  // フォーム要素への ref は計測側と共用する。
+  const { formRef, handleInput, trackSubmit } = useFormTracking(FORM_NAME);
 
-  // 送信成功時に入力内容をクリアする（DOM 操作はマウント後の useEffect 内で行う）
   useEffect(() => {
-    if (state.status === 'success') {
-      formRef.current?.reset();
-    }
-  }, [state.status]);
+    if (state.status !== 'success') return;
+
+    // 送信「成功」のときだけ計測する（バリデーションエラーは送らない）
+    trackSubmit();
+    // 送信成功時に入力内容をクリアする（DOM 操作はマウント後の useEffect 内で行う）
+    formRef.current?.reset();
+  }, [state.status, trackSubmit, formRef]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-6">
+    // onInput はテキスト入力、onChange はセレクトの選択を拾う。
+    // どちらで発火しても form_start は 1 回しか送られない（useFormTracking 側で制御）。
+    <form
+      ref={formRef}
+      action={formAction}
+      onInput={handleInput}
+      onChange={handleInput}
+      className="space-y-6"
+    >
       {state.message ? (
         <p
           role={state.status === 'error' ? 'alert' : 'status'}

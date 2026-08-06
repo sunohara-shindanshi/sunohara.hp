@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { Noto_Sans_JP } from 'next/font/google';
 
+import AnalyticsProvider from '@/components/analytics/AnalyticsProvider';
+import GoogleTagManager, { GoogleTagManagerNoScript } from '@/components/analytics/GoogleTagManager';
 import Footer from '@/components/Footer';
-import GoogleAnalytics from '@/components/GoogleAnalytics';
 import Header from '@/components/Header';
 import { SITE_URL, siteConfig } from '@/lib/siteConfig';
 
@@ -43,20 +44,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://images.microcms-assets.io" crossOrigin="" />
         <link rel="dns-prefetch" href="https://images.microcms-assets.io" />
       </head>
-      {/* Google Analytics（本番のみ読み込み） */}
-      <GoogleAnalytics />
       <body className="flex min-h-screen flex-col bg-brand-bg font-sans text-brand-ink antialiased">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-brand-navy focus:px-4 focus:py-2 focus:text-sm focus:text-white"
-        >
-          本文へスキップ
-        </a>
-        <Header />
-        <main id="main" className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        {/* 計測タグ（Google Tag Manager）。GA4 への送信は GTM 側で設定する。本番ビルドのみ読み込む。 */}
+        <GoogleTagManagerNoScript />
+        <GoogleTagManager />
+
+        {/* サイト全体の計測基盤。配下では useAnalytics().trackEvent() が使える。 */}
+        <AnalyticsProvider>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-md focus:bg-brand-navy focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+          >
+            本文へスキップ
+          </a>
+          <Header />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </AnalyticsProvider>
       </body>
     </html>
   );

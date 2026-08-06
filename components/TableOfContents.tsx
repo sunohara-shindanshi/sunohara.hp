@@ -1,3 +1,4 @@
+import { analyticsAttributes } from '@/lib/analytics/attributes';
 import type { TocItem } from '@/types/blog';
 
 /**
@@ -7,6 +8,10 @@ import type { TocItem } from '@/types/blog';
  * （JavaScript を増やさず、キーボード操作・スクリーンリーダー対応も標準で得られる）。
  * 既定は開いた状態で、閉じると見出しの一覧が畳まれる。
  * リンク先は lib/richText.ts が本文の見出しに振った id。
+ *
+ * 計測：目次項目のクリックだけを toc_click として送る（data 属性による自動計測）。
+ * 開閉（summary）のクリックは計測対象外。記事情報（article_id / article_slug など）は
+ * 記事ページのコンテキストから自動で付くため、ここでは指定しない。
  */
 export default function TableOfContents({ items }: { items: readonly TocItem[] }) {
   if (items.length === 0) return null;
@@ -51,6 +56,11 @@ export default function TableOfContents({ items }: { items: readonly TocItem[] }
               >
                 <a
                   href={`#${item.id}`}
+                  {...analyticsAttributes('toc_click', {
+                    toc_text: item.text,
+                    toc_anchor: `#${item.id}`,
+                    toc_level: item.level,
+                  })}
                   className={`flex items-start gap-2 rounded-md px-2 py-2 transition-colors hover:bg-brand-bg hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent ${
                     isSub
                       ? 'text-[13px] leading-relaxed text-brand-muted'

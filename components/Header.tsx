@@ -8,6 +8,8 @@ import { useState } from 'react';
 
 import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { NAV_ITEMS, siteConfig, telHref } from '@/lib/siteConfig';
 
 export default function Header() {
@@ -61,6 +63,11 @@ export default function Header() {
               <li>
                 <a
                   href={telHref}
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.HEADER_TEL,
+                    cta_location: CTA_LOCATIONS.HEADER,
+                    link_url: telHref,
+                  })}
                   className="rounded text-sm font-medium text-brand-navy transition-colors hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent"
                 >
                   {siteConfig.tel}
@@ -69,6 +76,11 @@ export default function Header() {
               <li>
                 <Link
                   href="/contact"
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.HEADER_CONTACT,
+                    cta_location: CTA_LOCATIONS.HEADER,
+                    link_url: '/contact',
+                  })}
                   className="rounded-full bg-brand-sun px-5 py-2.5 text-sm font-bold text-brand-navy shadow-panel transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
                 >
                   相談する
@@ -136,6 +148,11 @@ export default function Header() {
               <Link
                 href="/contact"
                 onClick={closeMenu}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.HEADER_MOBILE_CONTACT,
+                  cta_location: CTA_LOCATIONS.HEADER,
+                  link_url: '/contact',
+                })}
                 className="block rounded-full bg-brand-sun px-4 py-3 text-center text-sm font-bold text-brand-navy shadow-panel focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
               >
                 相談する
@@ -143,6 +160,11 @@ export default function Header() {
               <a
                 href={telHref}
                 onClick={closeMenu}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.HEADER_TEL,
+                  cta_location: CTA_LOCATIONS.HEADER,
+                  link_url: telHref,
+                })}
                 className="mt-2 block rounded px-1 py-2 text-center text-sm font-medium text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
                 お電話：{siteConfig.tel}

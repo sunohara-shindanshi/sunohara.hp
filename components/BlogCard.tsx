@@ -2,20 +2,37 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import BrandMotif from '@/components/BrandMotif';
+import { buildArticleListItemParams } from '@/lib/analytics/article';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { buildBlogPostHref } from '@/lib/blogUrl';
 import { formatJapaneseDate } from '@/lib/formatDate';
 import type { BlogListItem } from '@/types/blog';
 
 /**
  * ブログ記事一覧のカード。カード全体が記事詳細（/blog/{id}）へのリンクになっている。
  * ※API から取得した値は JSX の中括弧展開のみで挿入する（本文以外で dangerouslySetInnerHTML は使わない）。
+ *
+ * クリックは article_select として自動計測される。記事情報は post から組み立てるため、
+ * 記事が増えても計測用のコードを書き足す必要はない。
  */
-export default function BlogCard({ post }: { post: BlogListItem }) {
+export default function BlogCard({
+  post,
+  listName,
+}: {
+  post: BlogListItem;
+  /** どの一覧に置かれたカードか（計測の list_name。例: blog_list / home_recent） */
+  listName?: string;
+}) {
   const publishedDate = post.publishedAt ? formatJapaneseDate(post.publishedAt) : null;
 
   return (
     <article className="h-full">
       <Link
-        href={`/blog/${post.id}`}
+        href={buildBlogPostHref(post.id)}
+        {...analyticsAttributes('article_select', {
+          ...buildArticleListItemParams(post),
+          list_name: listName,
+        })}
         className="flex h-full flex-col overflow-hidden rounded-2xl border border-brand-line bg-brand-surface shadow-panel transition-colors hover:border-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
       >
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-brand-bg">

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import ArticleAnalytics from '@/components/analytics/ArticleAnalytics';
 import ArticleKeyPoints from '@/components/ArticleKeyPoints';
 import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
@@ -11,7 +12,11 @@ import JsonLd from '@/components/JsonLd';
 import PostLinkList from '@/components/PostLinkList';
 import RichText from '@/components/RichText';
 import TableOfContents from '@/components/TableOfContents';
-import { buildBlogHref } from '@/lib/blogUrl';
+import TagList from '@/components/TagList';
+import { buildArticleAnalyticsParams } from '@/lib/analytics/article';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
+import { buildBlogHref, buildBlogPostHref } from '@/lib/blogUrl';
 import { formatJapaneseDate } from '@/lib/formatDate';
 import { buildPageMetadata } from '@/lib/metadata';
 import { fetchBlogPost, fetchBlogSitemapEntries, fetchLinkedPosts } from '@/lib/microcms';
@@ -52,7 +57,7 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
     title: post.title,
     // description は excerpt を使う（改行はメタタグ向けに空白へ正規化。未入力ならサイト共通の説明文）
     description: post.excerpt.replace(/\s+/g, ' ').trim() || siteConfig.description,
-    path: `/blog/${post.id}`,
+    path: buildBlogPostHref(post.id),
   });
 
   return {
@@ -99,7 +104,12 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'ホーム', item: SITE_URL },
       { '@type': 'ListItem', position: 2, name: 'ブログ', item: `${SITE_URL}/blog` },
-      { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}/blog/${post.id}` },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: post.title,
+        item: `${SITE_URL}${buildBlogPostHref(post.id)}`,
+      },
     ],
   };
 
@@ -109,7 +119,7 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
     headline: post.title,
     description: post.excerpt || undefined,
     datePublished: post.publishedAt,
-    mainEntityOfPage: `${SITE_URL}/blog/${post.id}`,
+    mainEntityOfPage: `${SITE_URL}${buildBlogPostHref(post.id)}`,
     ...(post.thumbnail ? { image: post.thumbnail.url } : {}),
     ...(post.categories.length > 0
       ? { articleSection: post.categories.map((category) => category.name) }
@@ -120,6 +130,14 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
 
   return (
     <>
+      {/*
+        記事の計測コンテキスト（画面には何も出ない）。
+        これを置くだけで、このページの全イベントに article_id / article_title /
+        article_category / article_tags / publish_date / updated_date / author が付く。
+        記事が増えても修正は不要。
+      */}
+      <ArticleAnalytics params={buildArticleAnalyticsParams(post)} />
+
       <JsonLd data={breadcrumbJsonLd} />
       <JsonLd data={articleJsonLd} />
 
@@ -187,6 +205,11 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             経営のご相談：
             <a
               href={telHref}
+              {...analyticsAttributes('cta_click', {
+                cta_name: CTA_NAMES.ARTICLE_HEADER_TEL,
+                cta_location: CTA_LOCATIONS.ARTICLE,
+                link_url: telHref,
+              })}
               className="ml-1 rounded font-bold text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
             >
               {siteConfig.tel}
@@ -230,6 +253,11 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                 <RichText sanitizedHtml={bodyHtml} />
               </div>
 
+              {/* タグ（microCMS に tags フィールドを作ると表示される。未設定なら何も出ない） */}
+              <div className="mt-8">
+                <TagList tags={post.tags} />
+              </div>
+
               <div className="mt-12 border-t border-brand-line pt-8">
                 <Link
                   href="/blog"
@@ -243,13 +271,25 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             {/* 内部リンク（おすすめ・関連記事・最近の投稿）。スクロール追従はさせず、末尾まで表示する */}
             <aside className="space-y-6">
               {/* microCMS で手動選択したおすすめの記事（articles）。未選択なら非表示 */}
-              <PostLinkList heading="おすすめの記事" posts={post.recommendedPosts} />
+              <PostLinkList
+                heading="おすすめの記事"
+                posts={post.recommendedPosts}
+                listName="recommended"
+                fromArticleId={post.id}
+              />
               <PostLinkList
                 heading={primaryCategory ? `${primaryCategory.name}の関連記事` : '関連記事'}
                 posts={relatedPosts}
                 emptyMessage="同じカテゴリの記事は現在ありません。"
+                listName="related"
+                fromArticleId={post.id}
               />
-              <PostLinkList heading="最近の投稿" posts={recentPosts} />
+              <PostLinkList
+                heading="最近の投稿"
+                posts={recentPosts}
+                listName="recent"
+                fromArticleId={post.id}
+              />
               <div className="rounded-2xl border border-brand-line bg-brand-surface p-6 shadow-panel">
                 <h2 className="font-display text-lg font-bold tracking-jp text-brand-navy">
                   事業内容
@@ -259,6 +299,11 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
                 </p>
                 <Link
                   href="/services"
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.ARTICLE_SIDEBAR_SERVICES,
+                    cta_location: CTA_LOCATIONS.ARTICLE,
+                    link_url: '/services',
+                  })}
                   className="mt-4 inline-flex rounded-full border border-brand-navy px-5 py-2.5 text-sm font-medium text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
                 >
                   支援内容を見る

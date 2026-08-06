@@ -8,6 +8,8 @@ import JsonLd from '@/components/JsonLd';
 import PrimaryCta from '@/components/PrimaryCta';
 import SectionHeading from '@/components/SectionHeading';
 import ServiceCard from '@/components/ServiceCard';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
 import { fetchLinkedPosts } from '@/lib/microcms';
 import { SERVICES } from '@/lib/services';
@@ -123,7 +125,13 @@ export default async function HomePage() {
 私たちが大切にしているのは「{siteConfig.catchphrase}」。提案して終わりではなく、現場に入り込み、実行まで一緒に手を動かします。財務・資金、組織・人事、営業・売上、IT・システム。会社全体を見ながら、御社が自走できる状態を目指して支援します。
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <PrimaryCta href="/contact">まずは現状を相談する</PrimaryCta>
+              <PrimaryCta
+                href="/contact"
+                ctaName={CTA_NAMES.HERO_CONTACT}
+                ctaLocation={CTA_LOCATIONS.HERO}
+              >
+                まずは現状を相談する
+              </PrimaryCta>
               <Link
                 href="/services"
                 className="inline-flex justify-center rounded-full border border-brand-navy bg-white/70 px-7 py-4 text-sm font-medium text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
@@ -135,6 +143,11 @@ export default async function HomePage() {
               お電話でのご相談：
               <a
                 href={telHref}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.HERO_TEL,
+                  cta_location: CTA_LOCATIONS.HERO,
+                  link_url: telHref,
+                })}
                 className="rounded font-medium text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
               >
                 {siteConfig.tel}
@@ -160,7 +173,8 @@ export default async function HomePage() {
             <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {recentPosts.map((post) => (
                 <li key={post.id}>
-                  <BlogCard post={post} />
+                  {/* list_name でトップページ経由の記事クリックを区別する */}
+                  <BlogCard post={post} listName="home_recent" />
                 </li>
               ))}
             </ul>

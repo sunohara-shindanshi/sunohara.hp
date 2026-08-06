@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 
+import { buildBlogPostHref } from '@/lib/blogUrl';
 import { fetchBlogSitemapEntries } from '@/lib/microcms';
 import { NAV_ITEMS, SITE_URL } from '@/lib/siteConfig';
 
@@ -24,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const entries = await fetchBlogSitemapEntries();
     articlePages = entries.map((entry) => ({
-      url: `${SITE_URL}/blog/${entry.id}`,
+      url: `${SITE_URL}${buildBlogPostHref(entry.id)}`,
       lastModified: entry.lastModified ? new Date(entry.lastModified) : now,
       changeFrequency: 'monthly',
       priority: 0.6,
