@@ -71,7 +71,15 @@ export default function BlogCard({
           </h3>
           {post.excerpt ? (
             <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-brand-ink">
-              {post.excerpt}
+              {/*
+                data-nosnippet：この抜粋文を Google の検索スニペットに使わせない。
+                カードが置かれるのはトップページとブログ一覧で、そのページ自身の説明文ではないため、
+                ここが検索結果の説明文に採用されると内容がちぐはぐになる
+                （例：トップページの検索結果に、記事の自己紹介文が出てしまう）。
+                クロール・インデックス自体は妨げないので、記事へのリンク評価には影響しない。
+                ※ 属性は span / div / section にのみ有効（Google の仕様）。
+              */}
+              <span data-nosnippet="">{post.excerpt}</span>
             </p>
           ) : null}
           <span

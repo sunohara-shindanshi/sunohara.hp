@@ -16,9 +16,23 @@ import { SERVICES } from '@/lib/services';
 import { SITE_URL, siteConfig, telHref } from '@/lib/siteConfig';
 import type { BlogListItem } from '@/types/blog';
 
+/**
+ * トップページの説明文。
+ *
+ * 屋号・代表者名を先頭付近に置いている。氏名（「春原功貴」「すのはら」）で検索されたとき、
+ * この説明文がクエリに答えていないと、Google はページ本文から別のテキストを拾って
+ * 検索スニペットを作ってしまうため（実際に「最近のブログ」の記事抜粋が使われていた）。
+ * あわせて、一覧カードの抜粋には data-nosnippet を付けてスニペット候補から外している
+ * （components/BlogCard.tsx）。
+ * ※ スマートフォンでは 50 文字程度で切られるため、重要な情報ほど前に置くこと。
+ * ※ 代表者名は姓名の間の空白を詰める。検索されるのは「春原功貴」（空白なし）のため、
+ *   表示用の表記（春原 功貴）のままだと検索語と文字列が一致しない。
+ */
+const REPRESENTATIVE_NAME_FOR_SEARCH = siteConfig.representative.name.replace(/\s+/g, '');
+
 export const metadata = buildPageMetadata({
   title: 'ホーム',
-  description: `${siteConfig.address.region}${siteConfig.address.locality}の${siteConfig.name}。「${siteConfig.catchphrase}」を掲げ、財務・資金、組織・人事、営業・売上、IT・システムの4領域を、現場に足を運ぶ実務支援として横断的にご提供します。`,
+  description: `（代表：${REPRESENTATIVE_NAME_FOR_SEARCH}／中小企業診断士）。「${siteConfig.catchphrase}」を掲げ、財務・資金、組織・人事、営業・売上、IT・システムの4領域を現場で支援します。`,
   path: '/',
 });
 
