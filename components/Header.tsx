@@ -59,20 +59,23 @@ export default function Header() {
                   </Link>
                 </li>
               ))}
-              {/* 電話（オフライン導線）は補助テキスト、CTA は sun 色ボタンで明確に区別する */}
-              <li>
-                <a
-                  href={telHref}
-                  {...analyticsAttributes('cta_click', {
-                    cta_name: CTA_NAMES.HEADER_TEL,
-                    cta_location: CTA_LOCATIONS.HEADER,
-                    link_url: telHref,
-                  })}
-                  className="rounded text-sm font-medium text-brand-navy transition-colors hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent"
-                >
-                  {siteConfig.tel}
-                </a>
-              </li>
+              {/* 電話（オフライン導線）は補助テキスト、CTA は sun 色ボタンで明確に区別する。
+                  電話番号が非掲載（siteConfig.tel が null）のときは表示しない。 */}
+              {telHref ? (
+                <li>
+                  <a
+                    href={telHref}
+                    {...analyticsAttributes('cta_click', {
+                      cta_name: CTA_NAMES.HEADER_TEL,
+                      cta_location: CTA_LOCATIONS.HEADER,
+                      link_url: telHref,
+                    })}
+                    className="rounded text-sm font-medium text-brand-navy transition-colors hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent"
+                  >
+                    {siteConfig.tel}
+                  </a>
+                </li>
+              ) : null}
               <li>
                 <Link
                   href="/contact"
@@ -157,18 +160,20 @@ export default function Header() {
               >
                 相談する
               </Link>
-              <a
-                href={telHref}
-                onClick={closeMenu}
-                {...analyticsAttributes('cta_click', {
-                  cta_name: CTA_NAMES.HEADER_TEL,
-                  cta_location: CTA_LOCATIONS.HEADER,
-                  link_url: telHref,
-                })}
-                className="mt-2 block rounded px-1 py-2 text-center text-sm font-medium text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-              >
-                お電話：{siteConfig.tel}
-              </a>
+              {telHref ? (
+                <a
+                  href={telHref}
+                  onClick={closeMenu}
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.HEADER_TEL,
+                    cta_location: CTA_LOCATIONS.HEADER,
+                    link_url: telHref,
+                  })}
+                  className="mt-2 block rounded px-1 py-2 text-center text-sm font-medium text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                >
+                  お電話：{siteConfig.tel}
+                </a>
+              ) : null}
             </li>
           </ul>
         </Container>

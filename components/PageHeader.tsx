@@ -18,7 +18,7 @@ export default function PageHeader({
   description: string;
   /**
    * ファーストビューの CTA ボタン。ページ内容に合わせたラベルを渡す。
-   * 省略した場合はボタンを出さず、電話番号のみ表示する（例：お問い合わせページ自身）。
+   * 省略した場合はボタンを出さない（例：お問い合わせページ自身）。
    */
   cta?: { label: string; href: string };
 }) {
@@ -41,30 +41,35 @@ export default function PageHeader({
           {description}
         </p>
 
-        {/* ファーストビューの CTA（主要ボタン + 電話番号） */}
-        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-          {cta ? (
-            <PrimaryCta
-              href={cta.href}
-              ctaName={CTA_NAMES.PAGE_HEADER_CONTACT}
-              ctaLocation={CTA_LOCATIONS.PAGE_HEADER}
-            >
-              {cta.label}
-            </PrimaryCta>
-          ) : null}
-          <a
-            href={telHref}
-            {...analyticsAttributes('cta_click', {
-              cta_name: CTA_NAMES.PAGE_HEADER_TEL,
-              cta_location: CTA_LOCATIONS.PAGE_HEADER,
-              link_url: telHref,
-            })}
-            className="rounded text-sm text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-          >
-            お電話：
-            <span className="font-bold underline underline-offset-4">{siteConfig.tel}</span>
-          </a>
-        </div>
+        {/* ファーストビューの CTA（主要ボタン + 電話番号）。
+            CTA も電話番号も無いページでは、余白だけの行が残らないよう行ごと出さない。 */}
+        {cta || telHref ? (
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+            {cta ? (
+              <PrimaryCta
+                href={cta.href}
+                ctaName={CTA_NAMES.PAGE_HEADER_CONTACT}
+                ctaLocation={CTA_LOCATIONS.PAGE_HEADER}
+              >
+                {cta.label}
+              </PrimaryCta>
+            ) : null}
+            {telHref ? (
+              <a
+                href={telHref}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.PAGE_HEADER_TEL,
+                  cta_location: CTA_LOCATIONS.PAGE_HEADER,
+                  link_url: telHref,
+                })}
+                className="rounded text-sm text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              >
+                お電話：
+                <span className="font-bold underline underline-offset-4">{siteConfig.tel}</span>
+              </a>
+            ) : null}
+          </div>
+        ) : null}
       </Container>
     </section>
   );

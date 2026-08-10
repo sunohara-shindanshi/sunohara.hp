@@ -46,20 +46,27 @@ export default function CtaSection({
             </PrimaryCta>
           </div>
 
-          <p className="mt-6 text-sm text-brand-accentsoft">
-            お急ぎの方はお電話でも：
-            <a
-              href={telHref}
-              {...analyticsAttributes('cta_click', {
-                cta_name: CTA_NAMES.SECTION_TEL,
-                cta_location: CTA_LOCATIONS.SECTION,
-                link_url: telHref,
-              })}
-              className="ml-1 rounded font-bold text-white underline underline-offset-4 hover:text-brand-sun focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-sun"
-            >
-              {siteConfig.tel}
-            </a>
-          </p>
+          {/* 電話が非掲載のときは、フォームで受け付けている旨に差し替える */}
+          {telHref ? (
+            <p className="mt-6 text-sm text-brand-accentsoft">
+              お急ぎの方はお電話でも：
+              <a
+                href={telHref}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.SECTION_TEL,
+                  cta_location: CTA_LOCATIONS.SECTION,
+                  link_url: telHref,
+                })}
+                className="ml-1 rounded font-bold text-white underline underline-offset-4 hover:text-brand-sun focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-sun"
+              >
+                {siteConfig.tel}
+              </a>
+            </p>
+          ) : (
+            <p className="mt-6 text-sm text-brand-accentsoft">
+              ご相談はフォームから承っています。内容が固まっていない段階でも構いません。
+            </p>
+          )}
           {notes.length > 0 ? (
             <p className="mt-2 text-xs text-brand-accentsoft/90">{notes.join(' / ')}</p>
           ) : null}

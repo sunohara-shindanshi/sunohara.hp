@@ -28,8 +28,15 @@ export const siteConfig = {
     ...address,
     full: `${address.region}${address.locality}${address.street}`,
   },
-  /** 電話番号（表示用） */
-  tel: '080-6935-6869',
+  /**
+   * 電話番号（表示用）。
+   *
+   * null の間は、サイト上の電話導線（ヘッダー・フッター・CTA・事務所概要・構造化データ）を
+   * すべて自動的に非表示にし、問い合わせをフォームに集約する。
+   * 再び掲載する場合は、ここに番号を設定するだけで全ページに反映される
+   * （表示・非表示の分岐は各コンポーネント側に実装済み）。
+   */
+  tel: null as string | null,
   /**
    * お問い合わせの通知先メールアドレス（既定値）。
    * ※ 実際の送信先は環境変数 CONTACT_TO_EMAIL で上書きできる（将来アドレスが変わってもコード変更不要）。
@@ -90,8 +97,13 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   { id: 'x', label: 'X（旧Twitter）', url: null, ctaName: 'profile_x' },
 ];
 
-/** tel: リンク用のハイフンなし電話番号（表示用の tel から機械的に生成する） */
-export const telHref = `tel:${siteConfig.tel.replace(/-/g, '')}`;
+/**
+ * tel: リンク用のハイフンなし電話番号（表示用の tel から機械的に生成する）。
+ * 電話番号が未設定（非掲載）のときは null になり、各画面の電話導線が表示されなくなる。
+ */
+export const telHref: string | null = siteConfig.tel
+  ? `tel:${siteConfig.tel.replace(/-/g, '')}`
+  : null;
 
 /** サイト内の全ページ。ヘッダー / フッター / sitemap.ts が同じ配列を参照する。 */
 export const NAV_ITEMS = [

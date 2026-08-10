@@ -89,7 +89,7 @@ export default function ServicesPage() {
             </h2>
             <ol className="mt-8 grid gap-6 md:grid-cols-4">
               {[
-                { step: 'お問い合わせ', body: 'フォームまたはお電話でご連絡ください。' },
+                { step: 'お問い合わせ', body: 'お問い合わせフォームからご連絡ください。' },
                 { step: 'ヒアリング', body: '現状と、いちばん困っていることを伺います。' },
                 { step: '現場確認・ご提案', body: '実際の現場を拝見し、支援範囲と進め方をご提案します。' },
                 { step: '支援開始', body: 'ご契約後、決めた進め方に沿って併走します。' },

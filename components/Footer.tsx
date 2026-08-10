@@ -27,20 +27,25 @@ export default function Footer() {
             </div>
             <address className="mt-6 space-y-2 text-sm not-italic leading-relaxed text-brand-accentsoft">
               <p>{siteConfig.address.full}</p>
-              <p>
-                TEL:{' '}
-                <a
-                  href={telHref}
-                  {...analyticsAttributes('cta_click', {
-                    cta_name: CTA_NAMES.FOOTER_TEL,
-                    cta_location: CTA_LOCATIONS.FOOTER,
-                    link_url: telHref,
-                  })}
-                  className="rounded underline underline-offset-4 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accentsoft"
-                >
-                  {siteConfig.tel}
-                </a>
-              </p>
+              {/* 電話番号は非掲載のときは行ごと出さない（siteConfig.tel が null の間） */}
+              {telHref ? (
+                <p>
+                  TEL:{' '}
+                  <a
+                    href={telHref}
+                    {...analyticsAttributes('cta_click', {
+                      cta_name: CTA_NAMES.FOOTER_TEL,
+                      cta_location: CTA_LOCATIONS.FOOTER,
+                      link_url: telHref,
+                    })}
+                    className="rounded underline underline-offset-4 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accentsoft"
+                  >
+                    {siteConfig.tel}
+                  </a>
+                </p>
+              ) : (
+                <p>お問い合わせはフォームから承っています。</p>
+              )}
             </address>
           </div>
 

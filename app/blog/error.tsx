@@ -2,6 +2,7 @@
 
 // Next.js の error.tsx は Client Component である必要がある（再試行ボタンで reset() を呼ぶため）。
 
+import Link from 'next/link';
 import { useEffect } from 'react';
 
 import Container from '@/components/Container';
@@ -28,14 +29,29 @@ export default function BlogError({
           </p>
           <p className="mt-4 text-sm leading-loose text-brand-ink">
             ブログ記事の読み込み中に問題が発生しました。時間をおいて再度お試しください。
-            お急ぎの場合は、お電話（
-            <a
-              href={telHref}
-              className="rounded font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-            >
-              {siteConfig.tel}
-            </a>
-            ）でも承っております。
+            {telHref ? (
+              <>
+                お急ぎの場合は、お電話（
+                <a
+                  href={telHref}
+                  className="rounded font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                >
+                  {siteConfig.tel}
+                </a>
+                ）でも承っております。
+              </>
+            ) : (
+              <>
+                ご相談は
+                <Link
+                  href="/contact"
+                  className="mx-1 rounded font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                >
+                  お問い合わせフォーム
+                </Link>
+                からも承っております。
+              </>
+            )}
           </p>
           <button
             type="button"

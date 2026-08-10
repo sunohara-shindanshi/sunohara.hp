@@ -34,8 +34,10 @@ export const CTA_NAMES = {
   SECTION_CONTACT: 'section_contact',
   /** ページ末尾の CTA 帯の電話番号 */
   SECTION_TEL: 'section_tel',
-  /** 記事詳細のファーストビューの電話番号 */
+  /** 記事詳細のファーストビューの電話番号（電話を掲載している場合） */
   ARTICLE_HEADER_TEL: 'article_header_tel',
+  /** 記事詳細のファーストビューのお問い合わせリンク（電話が非掲載の場合） */
+  ARTICLE_HEADER_CONTACT: 'article_header_contact',
   /** 記事詳細サイドバーの「支援内容を見る」 */
   ARTICLE_SIDEBAR_SERVICES: 'article_sidebar_services',
   /** お問い合わせページの電話番号 */

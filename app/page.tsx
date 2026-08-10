@@ -48,7 +48,8 @@ const jsonLd = {
   slogan: siteConfig.catchphrase,
   description: siteConfig.description,
   url: SITE_URL,
-  telephone: siteConfig.tel,
+  // 電話番号を掲載していない間は telephone プロパティごと出さない（事実と異なる情報を残さないため）
+  ...(siteConfig.tel ? { telephone: siteConfig.tel } : {}),
   address: {
     '@type': 'PostalAddress',
     addressCountry: 'JP',
@@ -153,20 +154,28 @@ export default async function HomePage() {
                 事業内容を見る
               </Link>
             </div>
-            <p className="mt-6 text-sm text-brand-ink">
-              お電話でのご相談：
-              <a
-                href={telHref}
-                {...analyticsAttributes('cta_click', {
-                  cta_name: CTA_NAMES.HERO_TEL,
-                  cta_location: CTA_LOCATIONS.HERO,
-                  link_url: telHref,
-                })}
-                className="rounded font-medium text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-              >
-                {siteConfig.tel}
-              </a>
-            </p>
+            {/* 電話番号を掲載している場合のみ電話導線を出し、
+                非掲載のときは事実として確認済みの訴求（オンライン相談）に差し替える */}
+            {telHref ? (
+              <p className="mt-6 text-sm text-brand-ink">
+                お電話でのご相談：
+                <a
+                  href={telHref}
+                  {...analyticsAttributes('cta_click', {
+                    cta_name: CTA_NAMES.HERO_TEL,
+                    cta_location: CTA_LOCATIONS.HERO,
+                    link_url: telHref,
+                  })}
+                  className="rounded font-medium text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+                >
+                  {siteConfig.tel}
+                </a>
+              </p>
+            ) : siteConfig.consultation.online ? (
+              <p className="mt-6 text-sm text-brand-ink">
+                ご相談はフォームから承っています。オンライン相談にも対応しています。
+              </p>
+            ) : null}
           </div>
         </Container>
       </section>

@@ -200,20 +200,35 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
             {post.title}
           </h1>
 
-          {/* ファーストビューの相談導線（電話） */}
+          {/* ファーストビューの相談導線。
+              電話番号を掲載している間は電話、非掲載のときはお問い合わせフォームへ誘導する。 */}
           <p className="mt-5 text-sm text-brand-ink">
             経営のご相談：
-            <a
-              href={telHref}
-              {...analyticsAttributes('cta_click', {
-                cta_name: CTA_NAMES.ARTICLE_HEADER_TEL,
-                cta_location: CTA_LOCATIONS.ARTICLE,
-                link_url: telHref,
-              })}
-              className="ml-1 rounded font-bold text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
-            >
-              {siteConfig.tel}
-            </a>
+            {telHref ? (
+              <a
+                href={telHref}
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.ARTICLE_HEADER_TEL,
+                  cta_location: CTA_LOCATIONS.ARTICLE,
+                  link_url: telHref,
+                })}
+                className="ml-1 rounded font-bold text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              >
+                {siteConfig.tel}
+              </a>
+            ) : (
+              <Link
+                href="/contact"
+                {...analyticsAttributes('cta_click', {
+                  cta_name: CTA_NAMES.ARTICLE_HEADER_CONTACT,
+                  cta_location: CTA_LOCATIONS.ARTICLE,
+                  link_url: '/contact',
+                })}
+                className="ml-1 rounded font-bold text-brand-navy underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-navy"
+              >
+                お問い合わせフォームへ
+              </Link>
+            )}
           </p>
         </Container>
       </section>

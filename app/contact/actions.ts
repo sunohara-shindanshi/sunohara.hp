@@ -31,6 +31,15 @@ const MAX_LENGTH: Record<ContactFieldName, number> = {
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TEL_PATTERN = /^[0-9+\-() 　]+$/;
 
+/**
+ * 送信できなかったときの案内文。
+ * 電話番号を掲載している間はその番号を案内し、非掲載のときは再試行を案内する
+ * （通知先メールアドレスは公開していないため、ここには出さない）。
+ */
+const FALLBACK_CONTACT_GUIDE = siteConfig.tel
+  ? `お手数ですが、お電話（${siteConfig.tel}）でご連絡ください。`
+  : 'お手数ですが、時間をおいて再度お試しください。';
+
 function getField(formData: FormData, key: ContactFieldName): string {
   const value = formData.get(key);
   return typeof value === 'string' ? value.trim() : '';
@@ -101,7 +110,7 @@ export async function submitContactForm(
     console.error('[contact] RESEND_API_KEY または CONTACT_FROM_EMAIL が未設定です。');
     return {
       status: 'error',
-      message: `現在フォームからの送信を受け付けられない状態です。お手数ですが、お電話（${siteConfig.tel}）でご連絡ください。`,
+      message: `現在フォームからの送信を受け付けられない状態です。${FALLBACK_CONTACT_GUIDE}`,
       fieldErrors: {},
     };
   }
@@ -127,7 +136,7 @@ export async function submitContactForm(
     console.error('[contact] メール送信に失敗しました', error);
     return {
       status: 'error',
-      message: `送信中に問題が発生しました。時間をおいて再度お試しいただくか、お電話（${siteConfig.tel}）でご連絡ください。`,
+      message: `送信中に問題が発生しました。${FALLBACK_CONTACT_GUIDE}`,
       fieldErrors: {},
     };
   }

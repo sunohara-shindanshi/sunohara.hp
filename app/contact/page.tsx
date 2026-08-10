@@ -10,7 +10,7 @@ import { siteConfig, telHref } from '@/lib/siteConfig';
 
 export const metadata = buildPageMetadata({
   title: 'お問い合わせ',
-  description: `${siteConfig.name}へのご相談はこちらから。財務・資金、組織・人事、営業・売上、IT・システムに関するお問い合わせをフォームまたはお電話（${siteConfig.tel}）で承ります。`,
+  description: `${siteConfig.name}へのご相談はこちらから。財務・資金、組織・人事、営業・売上、IT・システムに関するお問い合わせを、フォームから承ります。ご相談内容が固まっていない段階でも構いません。`,
   path: '/contact',
 });
 
@@ -39,22 +39,41 @@ export default function ContactPage() {
             </div>
 
             <aside className="h-fit rounded-2xl border border-brand-line bg-brand-surface p-6 shadow-panel sm:p-8">
-              <h2 className="font-display text-lg font-bold tracking-jp text-brand-navy">
-                お電話でのご相談
-              </h2>
-              <p className="mt-4 text-sm leading-relaxed text-brand-ink">
-                直接お話しされたい場合は、こちらへご連絡ください。
-              </p>
-              <a
-                href={telHref}
-                {...analyticsAttributes('cta_click', {
-                  cta_name: CTA_NAMES.CONTACT_PAGE_TEL,
-                  link_url: telHref,
-                })}
-                className="mt-4 inline-flex rounded font-display text-2xl font-bold tracking-jp text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-              >
-                {siteConfig.tel}
-              </a>
+              {/* 電話番号を掲載している場合のみ電話導線を出す。
+                  非掲載のときは、フォーム利用時の案内に差し替える。 */}
+              {telHref ? (
+                <>
+                  <h2 className="font-display text-lg font-bold tracking-jp text-brand-navy">
+                    お電話でのご相談
+                  </h2>
+                  <p className="mt-4 text-sm leading-relaxed text-brand-ink">
+                    直接お話しされたい場合は、こちらへご連絡ください。
+                  </p>
+                  <a
+                    href={telHref}
+                    {...analyticsAttributes('cta_click', {
+                      cta_name: CTA_NAMES.CONTACT_PAGE_TEL,
+                      link_url: telHref,
+                    })}
+                    className="mt-4 inline-flex rounded font-display text-2xl font-bold tracking-jp text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                  >
+                    {siteConfig.tel}
+                  </a>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-display text-lg font-bold tracking-jp text-brand-navy">
+                    ご相談の受け付けについて
+                  </h2>
+                  {/* モバイルではフォームが上に縦積みになるため、「左の」など位置に依存する表現は使わない */}
+                  <p className="mt-4 text-sm leading-relaxed text-brand-ink">
+                    ご相談はお問い合わせフォームから承っています。
+                    {siteConfig.consultation.online
+                      ? 'お話を伺ったうえで、オンラインでの面談にも対応しています。'
+                      : null}
+                  </p>
+                </>
+              )}
 
               <dl className="mt-8 space-y-4 text-sm">
                 <div>

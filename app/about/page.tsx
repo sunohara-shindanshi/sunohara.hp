@@ -15,17 +15,21 @@ import { siteConfig, telHref } from '@/lib/siteConfig';
 
 export const metadata = buildPageMetadata({
   title: '基本情報',
-  description: `${siteConfig.name}の事務所概要（所在地：${siteConfig.address.full}／TEL：${siteConfig.tel}）と、代表者からのご挨拶を掲載しています。`,
+  description: `${siteConfig.name}（代表：${siteConfig.representative.name}）の事務所概要と、代表者からのご挨拶を掲載しています。所在地は${siteConfig.address.full}。ご相談はお問い合わせフォームから承ります。`,
   path: '/about',
 });
 
-/** 事務所概要テーブルの行。値は lib/siteConfig.ts / lib/services.ts から参照する。 */
+/**
+ * 事務所概要テーブルの行。値は lib/siteConfig.ts / lib/services.ts から参照する。
+ * 電話番号は非掲載（siteConfig.tel が null）の間は行ごと出さない。
+ */
 const OFFICE_INFO: readonly { label: string; value: string }[] = [
   { label: '屋号', value: siteConfig.name },
   { label: 'キャッチフレーズ', value: siteConfig.catchphrase },
   { label: '代表者', value: `${siteConfig.representative.name}（${siteConfig.representative.title}）` },
   { label: '所在地', value: siteConfig.address.full },
-  { label: '電話番号', value: siteConfig.tel },
+  ...(siteConfig.tel ? [{ label: '電話番号', value: siteConfig.tel }] : []),
+  { label: 'お問い合わせ', value: 'お問い合わせフォームより承ります' },
   { label: '事業内容', value: SERVICES.map((service) => service.title).join('／') },
 ];
 
@@ -146,13 +150,20 @@ export default function AboutPage() {
                       {row.label}
                     </th>
                     <td className="px-4 py-4 align-top leading-relaxed text-brand-ink sm:px-6">
-                      {row.label === '電話番号' ? (
+                      {row.label === '電話番号' && telHref ? (
                         <a
                           href={telHref}
                           className="rounded text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
                         >
                           {row.value}
                         </a>
+                      ) : row.label === 'お問い合わせ' ? (
+                        <Link
+                          href="/contact"
+                          className="rounded text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                        >
+                          {row.value}
+                        </Link>
                       ) : (
                         row.value
                       )}
