@@ -23,6 +23,54 @@
 
 @layer components {
   /*
+   * 記事本文の見出しスタイル（microCMS の「見出し1」〜「見出し3」）
+   *
+   * ⚠ タグと見出しレベルの対応に注意。
+   *   lib/sanitizeHtml.ts で本文の見出しを 1 段ずつ下げているため
+   *   （ページ内の h1 は記事タイトルの 1 つだけにするため）、次のように対応する。
+   *
+   *     microCMS「見出し1」→ <h2> … 文字の左横に青い縦線
+   *     microCMS「見出し2」→ <h3> … 文字列と同じ長さの青い下線
+   *     microCMS「見出し3」→ <h4> … 先頭に青いハイフン
+   *
+   * ・セレクタは .prose（記事本文）配下に限定する。
+   *   「この記事でわかること」「関連記事」など本文の外にある見出しに影響させないため。
+   * ・:where() を使わず要素セレクタで書いているのは、@tailwindcss/typography が
+   *   .prose :where(h2) （詳細度 0,1,0）で当てているスタイルを確実に上書きするため。
+   * ・線の色はブランドのアクセント（青空のブルー）に統一する。
+   */
+
+  /*
+   * 見出し1：文字の左横に縦線。
+   * 縦線の高さは見出しの行数に追従する（2 行に折り返しても左端に 1 本通る）。
+   */
+  .prose h2 {
+    padding-left: 0.6em;
+    border-left: 5px solid theme('colors.brand.accent');
+  }
+
+  /*
+   * 見出し2：文字列と同じ長さの下線。
+   * width: fit-content で見出しの幅を文字幅まで縮め、その下端に線を引く。
+   * （display は block のままなので、前後の余白の詰まり方は他の見出しと変わらない）
+   * 文字列が 1 行に収まらない場合は max-width: 100% で折り返し、線は本文幅まで伸びる。
+   */
+  .prose h3 {
+    width: fit-content;
+    max-width: 100%;
+    padding-bottom: 0.25em;
+    border-bottom: 2px solid theme('colors.brand.accent');
+  }
+
+  /* 見出し3：先頭にハイフン */
+  .prose h4::before {
+    content: '-';
+    margin-right: 0.4em;
+    color: theme('colors.brand.accent');
+    font-weight: 700;
+  }
+
+  /*
    * コラム（囲み枠）
    * microCMS のリッチエディタで、囲みたい段落・テキストにカスタムclass「column」を付けると、
    * 記事本文（.prose）内で四角い枠のボックスとして表示される。

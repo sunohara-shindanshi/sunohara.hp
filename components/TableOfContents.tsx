@@ -45,7 +45,11 @@ export default function TableOfContents({ items }: { items: readonly TocItem[] }
       </summary>
 
       <nav aria-label="目次" className="border-t border-brand-line px-6 py-5">
-        <ol className="space-y-1">
+        {/*
+          項目同士の余白は付けない（space-y なし）。
+          各リンクの上下パディングだけで間隔を作り、行が 1 行分空いて見えるのを防ぐ。
+        */}
+        <ol>
           {items.map((item) => {
             const isSub = item.level === 3;
             return (
@@ -61,7 +65,9 @@ export default function TableOfContents({ items }: { items: readonly TocItem[] }
                     toc_anchor: `#${item.id}`,
                     toc_level: item.level,
                   })}
-                  className={`flex items-start gap-2 rounded-md px-2 py-2 transition-colors hover:bg-brand-bg hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent ${
+                  // py-1（上下 4px）は、指で押せる大きさ（高さ 約31px）を保ちつつ
+                  // 行間が空きすぎない値。WCAG 2.2 のターゲットサイズ最小 24px も満たす。
+                  className={`flex items-start gap-2 rounded-md px-2 py-1 transition-colors hover:bg-brand-bg hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent ${
                     isSub
                       ? 'text-[13px] leading-relaxed text-brand-muted'
                       : 'text-sm font-medium leading-relaxed text-brand-navy'
