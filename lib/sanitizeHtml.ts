@@ -8,7 +8,7 @@ const MICROCMS_IMAGE_HOST = 'images.microcms-assets.io';
  * microCMS の画像 API は `auto=format` 非対応のため、`fm=webp` を明示する。
  * microCMS 以外のホストや、すでに fm 指定がある URL はそのまま返す。
  */
-function toWebpIfMicroCMS(src: string): string {
+export function toWebpIfMicroCMS(src: string): string {
   try {
     const url = new URL(src);
     if (url.hostname !== MICROCMS_IMAGE_HOST) return src;

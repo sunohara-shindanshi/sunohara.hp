@@ -83,8 +83,8 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
 
   const primaryCategory = post.categories[0];
   const publishedDate = post.publishedAt ? formatJapaneseDate(post.publishedAt) : null;
-  // 本文をサニタイズし、見出しに目次用の id を振ったうえで目次データを取り出す
-  const { html: bodyHtml, toc } = prepareArticleBody(post.body);
+  // 本文をサニタイズし、埋め込みリンクをカードに差し替え、見出しに目次用の id を振ったうえで目次データを取り出す
+  const { html: bodyHtml, toc } = await prepareArticleBody(post.body);
 
   // 内部リンク：同じカテゴリの記事（関連記事）と、新着記事（最近の投稿）
   const [relatedPosts, recentPosts] = await Promise.all([

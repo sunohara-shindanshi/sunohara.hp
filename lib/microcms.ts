@@ -337,6 +337,39 @@ export async function fetchBlogPosts({
 }
 
 /**
+ * 記事を 1 件、一覧表示に必要な項目だけ取得する。
+ *
+ * fetchBlogPost と違い本文（body）等を取得しない軽量版。
+ * 本文中の埋め込みリンク（lib/richText.ts の resolveEmbeddedLinkCards）を
+ * カード表示に差し替えるためのもので、失敗時は例外を投げず null を返す
+ * （埋め込みカードが解決できないだけで記事本文全体の表示を止めたくないため）。
+ */
+export async function fetchBlogListItemById(id: string): Promise<BlogListItem | null> {
+  const config = getConfig();
+  if (!config) return null;
+
+  const url = new URL(
+    `https://${config.serviceDomain}.microcms.io/api/v1/${config.blogEndpoint}/${encodeURIComponent(id)}`,
+  );
+  url.searchParams.set('fields', BLOG_LIST_FIELDS);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { 'X-MICROCMS-API-KEY': config.apiKey },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+  } catch {
+    return null;
+  }
+
+  if (!response.ok) return null;
+
+  const json: unknown = await response.json();
+  return parseListItem(json);
+}
+
+/**
  * 記事を 1 件取得する（記事詳細ページ用）。
  * 存在しない ID の場合は null を返す（呼び出し側で notFound() にする）。
  */
