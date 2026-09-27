@@ -17,8 +17,13 @@ export default function ServiceListItem({ service, index }: { service: Service; 
     <article className="border-t border-brand-accentsoft pt-6">
       <h3 className="font-display text-lg font-bold tracking-jp text-brand-navy sm:text-xl">
         <span className="text-brand-accent">{index + 1}.</span> {service.title}
-        <span className="ml-1 text-xs font-normal text-brand-muted">（{service.subtitle}）</span>
       </h3>
+      {/*
+        補足（〜にまつわる悩み）は見出しと同じ行に置かず、下の行に分ける。
+        PC 表示は4列グリッドで1列が狭く、見出しに続けて置くと
+        カッコの途中など不自然な位置で折り返されてしまうため。
+      */}
+      <p className="mt-1 text-xs text-brand-muted">（{service.subtitle}）</p>
       <ul className="mt-3 space-y-2 text-sm leading-relaxed text-brand-ink">
         {service.points.map((point) => (
           <li key={point} className="flex gap-2">
