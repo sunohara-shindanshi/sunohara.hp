@@ -23,8 +23,8 @@ export default function ServicesPage() {
         cta={{ label: 'この内容で相談する', href: '/contact' }}
       />
 
-      {/* 4領域の概要（トップページと同じ ServiceListItem を使用） */}
-      <section className="py-14 sm:py-20">
+      {/* 4領域の概要（トップページと同じ ServiceListItem を使用）。水色地。 */}
+      <section className="bg-brand-bg py-14 sm:py-20">
         <Container>
           <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {SERVICES.map((service, index) => (
@@ -80,8 +80,8 @@ export default function ServicesPage() {
         </Container>
       </section>
 
-      {/* 進め方 */}
-      <section className="py-14 sm:py-20">
+      {/* 進め方。水色地にして、前の白いセクションと縞模様を作る */}
+      <section className="bg-brand-bg py-14 sm:py-20">
         <Container>
           <div className="rounded-2xl border border-brand-line bg-brand-surface p-8 shadow-panel sm:p-12">
             <h2 className="font-display text-2xl font-bold tracking-jp text-brand-navy">

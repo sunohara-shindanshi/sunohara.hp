@@ -180,9 +180,10 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 最近のブログ（ファーストビューのすぐ下） */}
+      {/* 最近のブログ（ファーストビューのすぐ下）。
+          白地にして、次の「事業内容」セクション（水色）との縞模様を作る。 */}
       {recentPosts.length > 0 ? (
-        <section className="py-14 sm:py-20">
+        <section className="bg-brand-surface py-14 sm:py-20">
           <Container>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <SectionHeading label="Blog">最近のブログ</SectionHeading>
@@ -205,8 +206,8 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* 事業内容 */}
-      <section className="border-t border-brand-line py-16 sm:py-24">
+      {/* 事業内容。水色地にして、前後の白いセクションと縞模様を作る */}
+      <section className="border-t border-brand-line bg-brand-bg py-16 sm:py-24">
         <Container>
           <SectionHeading label="Services">事業内容</SectionHeading>
           <p className="mt-6 max-w-2xl text-sm leading-loose text-brand-ink sm:text-base">

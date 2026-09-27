@@ -43,8 +43,8 @@ export default function AboutPage() {
         cta={{ label: '代表に相談する', href: '/contact' }}
       />
 
-      {/* 代表者挨拶 */}
-      <section className="py-14 sm:py-20">
+      {/* 代表者挨拶。水色地。 */}
+      <section className="bg-brand-bg py-14 sm:py-20">
         <Container>
           <SectionHeading label="Message">代表者挨拶</SectionHeading>
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -58,6 +58,9 @@ export default function AboutPage() {
                       src={siteConfig.representative.image}
                       alt={`${siteConfig.representative.name}の写真`}
                       fill
+                      // モバイルではこの写真が本文最上部に来て画面内に収まりやすく、
+                      // LCP（最大コンテンツの描画）要素になりうるため優先読み込みにする
+                      priority
                       sizes="(min-width: 640px) 16rem, 100vw"
                       className="object-cover"
                     />
