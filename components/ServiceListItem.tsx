@@ -1,6 +1,8 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import type { Service } from '@/lib/services';
+import { getServiceIllustration } from '@/lib/serviceImages';
 
 /**
  * 事業内容の一覧項目（旧 ServiceCard）。
@@ -9,12 +11,31 @@ import type { Service } from '@/lib/services';
  * テンプレートで量産した印象（角丸カードの多用）が強くなるという指摘を受け、
  * 枠や背景を持たないプレーンなテキストブロックに変更した。
  * トップページと事業内容ページで同じコンポーネントを使う（ページごとにマークアップを複製しない）。
+ *
+ * イラストは public/services/{id}.拡張子 を置くと自動的に表示される
+ * （public/services/README.md 参照）。置いていない間は今まで通りの簡易アイコンのまま。
+ * ファイルシステムを直接見る getServiceIllustration を呼ぶため、
+ * このコンポーネントは Server Component のままにすること（'use client' を付けない）。
  */
 export default function ServiceListItem({ service, index }: { service: Service; index: number }) {
+  const illustration = getServiceIllustration(service.id);
+
   return (
     // 枠・背景の代わりに、上端の細い罫線だけで項目を区切る
     // （components/PageHeader.tsx 隣接の「支援の進め方」セクションと同じ区切り方）
     <article className="border-t border-brand-accentsoft pt-6">
+      {illustration ? (
+        // 背景を付けた「カード」に戻さないよう、枠なしでイラストだけを置く
+        <div className="relative mb-4 h-20 w-20">
+          <Image
+            src={illustration}
+            alt=""
+            fill
+            sizes="80px"
+            className="object-contain"
+          />
+        </div>
+      ) : null}
       <h3 className="font-display text-lg font-bold tracking-jp text-brand-navy sm:text-xl">
         <span className="text-brand-accent">{index + 1}.</span> {service.title}
       </h3>

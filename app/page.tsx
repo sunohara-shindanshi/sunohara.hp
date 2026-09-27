@@ -210,8 +210,12 @@ export default async function HomePage() {
       <section className="border-t border-brand-line bg-brand-bg py-16 sm:py-24">
         <Container>
           <SectionHeading label="Services">事業内容</SectionHeading>
+          {/*
+            文を短くしている。「いまの経営状況に合わせて必要な支援を組み合わせます」のように長いと、
+            PC幅（max-w-2xl）でちょうど「組み合わせます」の途中で折り返され、不自然に見えるため。
+          */}
           <p className="mt-6 max-w-2xl text-sm leading-loose text-brand-ink sm:text-base">
-            お金・人・売上・仕組みの4つの領域から、いまの経営状況に合わせて必要な支援を組み合わせます。
+            お金・人・売上・仕組みの4領域から、必要な支援を組み合わせてご提供します。
           </p>
           <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {SERVICES.map((service, index) => (

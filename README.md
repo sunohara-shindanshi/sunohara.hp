@@ -111,6 +111,7 @@ npm run dev
 | メール送信の設定 | `.env.local` の `RESEND_API_KEY` / `CONTACT_FROM_EMAIL` | Resend の API キーと送信元アドレス。未設定の間は、フォームは成功表示をせずエラーを表示します（「6. お問い合わせフォーム」参照） |
 | OGP 画像 | 未設定 | 画像素材が未確定のため、`openGraph.images` は設定していません。画像を用意したら `public/` に配置し、`lib/metadata.ts` の `openGraph` に `images` を追加してください。 |
 | 事業内容の補足文 | `lib/services.ts` の `detail` | 4 領域（財務・資金／組織・人事／営業・売上／IT・システム）の名称・サブタイトル・支援メニュー（`points`）は指定どおりです。`detail`（事業内容ページの説明文）は暫定のため、実際の支援内容に合わせて調整してください。 |
+| 事業内容のイラスト | `public/services/` | 現在は未設定（簡易アイコンで表示）。`public/services/README.md` の手順でファイルを置くと自動的に反映されます（コード変更不要）。 |
 
 ---
 
