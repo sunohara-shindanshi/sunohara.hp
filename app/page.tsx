@@ -7,7 +7,7 @@ import CtaSection from '@/components/CtaSection';
 import JsonLd from '@/components/JsonLd';
 import PrimaryCta from '@/components/PrimaryCta';
 import SectionHeading from '@/components/SectionHeading';
-import ServiceCard from '@/components/ServiceCard';
+import ServiceListItem from '@/components/ServiceListItem';
 import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
@@ -212,9 +212,9 @@ export default async function HomePage() {
           <p className="mt-6 max-w-2xl text-sm leading-loose text-brand-ink sm:text-base">
             お金・人・売上・仕組みの4つの領域から、いまの経営状況に合わせて必要な支援を組み合わせます。
           </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {SERVICES.map((service, index) => (
-              <ServiceCard key={service.id} service={service} index={index} />
+              <ServiceListItem key={service.id} service={service} index={index} />
             ))}
           </div>
           <div className="mt-10">

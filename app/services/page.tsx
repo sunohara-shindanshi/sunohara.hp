@@ -2,7 +2,7 @@ import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
 import CtaSection from '@/components/CtaSection';
 import PageHeader from '@/components/PageHeader';
-import ServiceCard from '@/components/ServiceCard';
+import ServiceListItem from '@/components/ServiceListItem';
 import { buildPageMetadata } from '@/lib/metadata';
 import { SERVICES } from '@/lib/services';
 
@@ -23,12 +23,12 @@ export default function ServicesPage() {
         cta={{ label: 'この内容で相談する', href: '/contact' }}
       />
 
-      {/* 4領域の概要（トップページと同じ ServiceCard を使用） */}
+      {/* 4領域の概要（トップページと同じ ServiceListItem を使用） */}
       <section className="py-14 sm:py-20">
         <Container>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {SERVICES.map((service, index) => (
-              <ServiceCard key={service.id} service={service} index={index} />
+              <ServiceListItem key={service.id} service={service} index={index} />
             ))}
           </div>
         </Container>
