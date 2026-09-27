@@ -32,7 +32,7 @@ const REPRESENTATIVE_NAME_FOR_SEARCH = siteConfig.representative.name.replace(/\
 
 export const metadata = buildPageMetadata({
   title: 'ホーム',
-  description: `（代表：${REPRESENTATIVE_NAME_FOR_SEARCH}／中小企業診断士）。「${siteConfig.catchphrase}」を掲げ、財務・資金、組織・人事、営業・売上、IT・システムの4領域を現場で支援します。`,
+  description: `代表：${REPRESENTATIVE_NAME_FOR_SEARCH}（中小企業診断士）。財務・資金、組織・人事、営業・売上、IT・システムの経営相談を、現場に入って形にします。掲げているのは「${siteConfig.catchphrase}」。`,
   path: '/',
 });
 
@@ -112,18 +112,18 @@ export default async function HomePage() {
 
       {/* ヒーロー：屋号とキャッチフレーズを最も目立つ位置に置く */}
       <section className="relative overflow-hidden bg-sky text-brand-ink">
-        {/* 陽ざしと雲間の光（装飾。文字が乗らない位置にだけ置く） */}
+        {/*
+          陽ざしの光（装飾）は 1 つだけにしている。ぼかした円を何層も重ねる作り方は
+          「AI が作るヒーロー」の典型的な見た目になりやすいため、サイト内でここ 1 箇所に絞った
+          （下層ページの見出し帯 components/PageHeader.tsx には置いていない）。
+        */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-sun/50 blur-3xl sm:h-96 sm:w-96"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 right-4 h-80 w-80 rounded-full bg-white/60 blur-3xl"
+          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-brand-sun/35 blur-3xl sm:h-80 sm:w-80"
         />
         <BrandMotif
           variant="hero"
-          className="pointer-events-none absolute inset-0 h-full w-full text-brand-accent opacity-20"
+          className="pointer-events-none absolute inset-0 h-full w-full text-brand-accent opacity-15"
         />
         <Container className="relative py-16 sm:py-24 lg:py-32">
           <div className="max-w-3xl">
@@ -137,7 +137,7 @@ export default async function HomePage() {
             <p className="mt-7 max-w-2xl text-sm leading-loose text-brand-ink sm:text-base">
 口だけでは、会社は変わらない。
 
-私たちが大切にしているのは「{siteConfig.catchphrase}」。提案して終わりではなく、現場に入り込み、実行まで一緒に手を動かします。財務・資金、組織・人事、営業・売上、IT・システム。会社全体を見ながら、御社が自走できる状態を目指して支援します。
+だから「{siteConfig.catchphrase}」を掲げています。提案して終わりにはせず、実際に現場へ入って手を動かすところまでやる。財務・資金、組織・人事、営業・売上、IT・システム。抱えている課題がどれであっても、最後は御社だけで回せる状態を目指します。
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <PrimaryCta
@@ -269,8 +269,8 @@ export default async function HomePage() {
 
       {/* お問い合わせ導線（コンテンツを読み終えた後の CTA） */}
       <CtaSection
-        heading="まずは現状をお聞かせください"
-        lead="「何から手を付けるべきか分からない」という段階でも構いません。財務・人・売上・仕組みのどの課題からでも、会社全体を見ながら一緒に考えます。"
+        heading="まずは今の状況を教えてください"
+        lead="「何から手をつければいいのか分からない」という段階でも大丈夫です。財務・人・売上・仕組み、どこから話しても構いません。聞きながら一緒に整理していきます。"
         buttonLabel="現状を相談する"
       />
     </>

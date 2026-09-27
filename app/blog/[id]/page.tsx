@@ -141,15 +141,11 @@ export default async function BlogDetailPage({ params }: BlogDetailProps) {
       <JsonLd data={breadcrumbJsonLd} />
       <JsonLd data={articleJsonLd} />
 
-      {/* 記事見出し */}
+      {/* 記事見出し。ぼかした円の装飾は置かない（components/PageHeader.tsx と同じ方針） */}
       <section className="relative overflow-hidden bg-sky text-brand-ink">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-sun/45 blur-3xl"
-        />
         <BrandMotif
           variant="hero"
-          className="pointer-events-none absolute inset-0 h-full w-full text-brand-accent opacity-15"
+          className="pointer-events-none absolute inset-0 h-full w-full text-brand-accent opacity-10"
         />
         <Container className="relative py-12 sm:py-16">
           {/* パンくず（内部リンク） */}
