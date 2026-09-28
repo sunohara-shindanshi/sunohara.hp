@@ -85,6 +85,7 @@ npm run dev
 | `MICROCMS_API_KEY` | ブログ利用時 | microCMS の API キー（**サーバー側のみで使用する秘匿値**） |
 | `MICROCMS_BLOG_ENDPOINT` | ブログ利用時 | ブログ記事 API のエンドポイント名（設定仕様書の想定値：`blogs`） |
 | `MICROCMS_CATEGORY_ENDPOINT` | 任意 | カテゴリ API のエンドポイント名（設定仕様書の想定値：`categories`）。未設定でも記事一覧は表示できるが、カテゴリ絞り込みは表示されない |
+| `MICROCMS_SERVICES_ENDPOINT` | 任意 | 事業内容 API のエンドポイント名。未設定なら `services`（「7. ブログ（microCMS）」の「事業内容の詳細ページ」参照） |
 | `RESEND_API_KEY` | フォーム利用時 | メール送信サービス [Resend](https://resend.com) の API キー（**サーバー側のみで使用する秘匿値**） |
 | `CONTACT_FROM_EMAIL` | フォーム利用時 | 通知メールの送信元アドレス（Resend で検証済みドメインのアドレス。テストは `onboarding@resend.dev`） |
 | `CONTACT_TO_EMAIL` | 任意 | 通知先（届け先）アドレス。未設定なら `lib/siteConfig.ts` の `contactEmail`（`sunohara.shindanshi@gmail.com`）に届く。**宛先変更はこの 1 行だけ** |
@@ -110,7 +111,7 @@ npm run dev
 | フォームの通知先メール | `.env.local` の `CONTACT_TO_EMAIL`（既定は `lib/siteConfig.ts` の `contactEmail`） | 問い合わせ内容の届け先。既定は `sunohara.shindanshi@gmail.com`。変更はこの 1 行のみ |
 | メール送信の設定 | `.env.local` の `RESEND_API_KEY` / `CONTACT_FROM_EMAIL` | Resend の API キーと送信元アドレス。未設定の間は、フォームは成功表示をせずエラーを表示します（「6. お問い合わせフォーム」参照） |
 | OGP 画像 | 未設定 | 画像素材が未確定のため、`openGraph.images` は設定していません。画像を用意したら `public/` に配置し、`lib/metadata.ts` の `openGraph` に `images` を追加してください。 |
-| 事業内容の補足文 | `lib/services.ts` の `detail` | 4 領域（財務・資金／組織・人事／営業・売上／IT・システム）の名称・サブタイトル・支援メニュー（`points`）は指定どおりです。`detail`（事業内容ページの説明文）は暫定のため、実際の支援内容に合わせて調整してください。 |
+| 事業ごとの詳細ページの本文 | microCMS の `services` API | 未作成の間は `lib/services.ts` の `detail`（説明文）と `points`（支援メニュー）で仮表示しています。作り方は「7. ブログ（microCMS）」の「事業内容の詳細ページ」を参照。 |
 | 事業内容のイラスト | `public/services/` | 現在は未設定（簡易アイコンで表示）。`public/services/README.md` の手順でファイルを置くと自動的に反映されます（コード変更不要）。 |
 
 ---
@@ -120,7 +121,8 @@ npm run dev
 | ページ | ルート | ファイル |
 |---|---|---|
 | トップページ | `/` | `app/page.tsx` |
-| 事業内容 | `/services` | `app/services/page.tsx` |
+| 事業内容（4 領域の一覧＋支援開始までの流れ） | `/services` | `app/services/page.tsx` |
+| 事業ごとの詳細 | `/services/finance` `/services/hr` `/services/sales` `/services/it` | `app/services/[id]/page.tsx`（本文は microCMS） |
 | 基本情報（代表者挨拶を含む） | `/about` | `app/about/page.tsx` |
 | ブログ一覧 | `/blog` | `app/blog/(list)/page.tsx` |
 | ブログ記事詳細 | `/blog/{記事ID}` | `app/blog/[id]/page.tsx` |
@@ -349,6 +351,52 @@ public/               静的アセット（現在は空）
 | `body` のサニタイズ方針 | `sanitize-html` を採用し、許可タグ・許可属性のホワイトリスト方式で実装済み（`lib/sanitizeHtml.ts`）。許可タグを増減する場合はこのファイルだけを編集してください。 |
 | タグ機能 | 未実装（要件外のため）。 |
 | ページネーション UI | ページ番号方式で実装済み（上記）。「もっと見る」方式にするかは要確認。 |
+
+### 事業内容の詳細ページ（microCMS の `services` API）
+
+事業ごとの詳細ページ（`/services/finance`・`/services/hr`・`/services/sales`・`/services/it`）の本文は、microCMS の「事業内容」API から取得します。
+
+**役割分担**
+
+| 内容 | 管理場所 | 理由 |
+|---|---|---|
+| 事業名・「〜にまつわる悩み」・一覧の箇条書き・ページの数 | `lib/services.ts` | お問い合わせフォームの選択肢・トップの一覧・フッターと連動しているため |
+| 冒頭の説明文・「やること」のブロック（見出し＋詳細＋画像） | microCMS | 事業ごとに個数や内容が違っても、管理画面だけで編集できるようにするため |
+
+**microCMS 側の作り方**（ブログと同じサービス内に作ります。API キーも共通）
+
+1. 「API を作成」→ API 名 `事業内容`、エンドポイント **`services`**、型 **リスト形式**。
+2. API スキーマに次のフィールドを作る。
+
+   | フィールド ID | 表示名 | 種類 | 必須 |
+   |---|---|---|---|
+   | `lead` | 冒頭の説明文 | テキストエリア | 任意（未入力なら `lib/services.ts` の `detail` を表示） |
+   | `sections` | やること | 繰り返し（下のカスタムフィールド `serviceSection` を選択） | 任意 |
+
+3. 「API 設定」→「カスタムフィールド」で、カスタムフィールド ID **`serviceSection`**（表示名：やること）を作り、次のフィールドを入れる。**先にこれを作ってから、手順 2 の `sections` を追加します。**
+
+   | フィールド ID | 表示名 | 種類 | 必須 |
+   |---|---|---|---|
+   | `heading` | 見出し | テキストフィールド | 必須（空のブロックは表示しません） |
+   | `body` | 詳細 | リッチエディタ | 任意 |
+   | `image` | 画像 | 画像 | 任意（無いブロックは文章だけを全幅で表示） |
+   | `imageAlt` | 画像の説明（代替テキスト） | テキストフィールド | 任意 |
+
+4. コンテンツを 4 件作り、**コンテンツ ID をそれぞれ `finance` / `hr` / `sales` / `it` に変更してから公開**する（コンテンツ ID で事業を見分けています。ランダムな ID のままだと表示されません）。
+
+API ID を `services` 以外にした場合だけ、環境変数 `MICROCMS_SERVICES_ENDPOINT` を設定してください（未設定なら `services`）。
+
+**表示のしかた**
+
+- ブロックは入力した順に上から並び、番号（01, 02 …）が自動で付きます。個数は事業ごとに自由です。
+- PC では画像と文章を横並びにし、ブロックごとに画像の左右を入れ替えます。スマホでは画像 → 文章の縦並びです。
+- 画像は横長（3:2 程度、横 1200px 前後）がきれいに収まります。`next/image` 経由で WebP に変換して配信します。
+- 「詳細」はブログ本文と同じサニタイズを通します（script 等は除去）。YouTube や自サイト記事の「埋め込み」もブログと同様に表示されます。
+- 「詳細」の中で見出しを使う場合は **見出し2 から** 使ってください（ブロックの見出しがページ上の第 2 階層のため）。
+- 未公開（下書き）・未作成・取得失敗の事業は、`lib/services.ts` の文章（`detail` と支援メニュー）で仮表示します。ページが消えたりエラーになったりはしません。
+- ブログと同じく、更新は最大 60 秒で反映されます。
+
+実装：`app/services/[id]/page.tsx`（ページ）／`components/ServiceSectionBlock.tsx`（1 ブロック）／`lib/microcms.ts` の `fetchServicePage`／`types/service.ts`
 
 ---
 

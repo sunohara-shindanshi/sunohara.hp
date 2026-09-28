@@ -9,6 +9,7 @@ import type {
   MicroCMSListResponse,
   Tag,
 } from '@/types/blog';
+import type { ServicePageContent, ServiceSection } from '@/types/service';
 
 /**
  * microCMS からブログ記事・カテゴリを取得する（Server Component から呼び出す前提）。
@@ -454,6 +455,81 @@ export async function fetchLinkedPosts({
 
 /** 記事詳細で「おすすめの記事」として表示する上限件数 */
 export const RECOMMENDED_LIMIT = 3;
+
+/**
+ * 事業内容 API のエンドポイント名。
+ * 環境変数が未設定なら README の手順どおりの API ID（services）を使う
+ * （API を作るだけで動き、Vercel 側に環境変数を足さなくて済むようにするため）。
+ */
+const DEFAULT_SERVICES_ENDPOINT = 'services';
+
+/**
+ * 繰り返しフィールド（sections）の 1 要素を整形する。
+ * 見出しが空のブロックは入力途中とみなして表示しない。
+ */
+function parseServiceSection(value: unknown): ServiceSection | null {
+  if (!isRecord(value)) return null;
+  const heading = getString(value.heading)?.trim();
+  if (!heading) return null;
+
+  return {
+    heading,
+    body: getString(value.body) ?? '',
+    image: parseImage(value.image),
+    imageAlt: getString(value.imageAlt)?.trim() ?? '',
+  };
+}
+
+/**
+ * 事業ごとの詳細ページの本文を microCMS から取得する。
+ *
+ * 取得できない場合（環境変数が未設定・API 未作成・コンテンツ未作成/下書き・通信障害）は
+ * 例外を投げずに null を返す。呼び出し側（app/services/[id]/page.tsx）は null のとき
+ * lib/services.ts の文章で仮表示するため、microCMS の状態に関わらずページは表示できる。
+ * ※ API キーはブログと共通（MICROCMS_API_KEY）。ブログ用のエンドポイント設定には依存しない。
+ */
+export async function fetchServicePage(id: string): Promise<ServicePageContent | null> {
+  const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN?.trim();
+  const apiKey = process.env.MICROCMS_API_KEY?.trim();
+  if (!serviceDomain || !apiKey) return null;
+
+  const endpoint =
+    normalizeEndpoint(process.env.MICROCMS_SERVICES_ENDPOINT) ?? DEFAULT_SERVICES_ENDPOINT;
+  const url = new URL(
+    `https://${normalizeServiceDomain(serviceDomain)}.microcms.io/api/v1/${endpoint}/${encodeURIComponent(id)}`,
+  );
+  url.searchParams.set('fields', 'lead,sections');
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { 'X-MICROCMS-API-KEY': apiKey },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+  } catch (error) {
+    console.error('[services] microCMS へのリクエストに失敗しました', error);
+    return null;
+  }
+
+  // 404 は「API またはコンテンツがまだ無い（下書きのみを含む）」状態。仮表示にするだけなのでログは出さない。
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    console.error(`[services] microCMS から事業内容を取得できませんでした（HTTP ${response.status}）`);
+    return null;
+  }
+
+  const json: unknown = await response.json();
+  if (!isRecord(json)) return null;
+
+  const sections = (Array.isArray(json.sections) ? json.sections : [])
+    .map(parseServiceSection)
+    .filter((section): section is ServiceSection => section !== null);
+
+  return {
+    lead: getString(json.lead)?.trim() || undefined,
+    sections,
+  };
+}
 
 /** sitemap.xml 用に、公開中の記事の ID と最終更新日をまとめて取得する */
 export async function fetchBlogSitemapEntries(): Promise<BlogSitemapEntry[]> {

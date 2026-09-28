@@ -212,8 +212,9 @@
 
 `lib/analytics/ctaNames.ts` を参照（`header_contact` / `header_tel` / `hero_contact` / `hero_tel` /
 `page_header_contact` / `page_header_tel` / `section_contact` / `section_tel` / `footer_contact` /
-`footer_tel` / `article_header_tel` / `article_sidebar_services` / `contact_page_tel` /
-`profile_contact` / `profile_note` / `profile_x`）。
+`footer_tel` / `article_header_tel` / `article_header_contact` / `article_sidebar_services` /
+`service_detail_contact` / `contact_page_tel` / `profile_contact` / `profile_note` / `profile_x`）。
+`service_detail_contact` は事業ごとの詳細ページ（`/services/{id}`）末尾の CTA です。どの事業のページかは `page_path` で見分けます。
 `mailto:` / `tel:` リンクは、属性が無くても `cta_name = email` / `tel` として自動計測されます。
 
 ---

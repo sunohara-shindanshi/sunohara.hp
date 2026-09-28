@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import type { Service } from '@/lib/services';
+import { buildServiceHref, type Service } from '@/lib/services';
 import { getServiceIllustration } from '@/lib/serviceImages';
 
 /**
@@ -19,6 +19,7 @@ import { getServiceIllustration } from '@/lib/serviceImages';
  */
 export default function ServiceListItem({ service, index }: { service: Service; index: number }) {
   const illustration = getServiceIllustration(service.id);
+  const href = buildServiceHref(service.id);
 
   return (
     // 枠・背景の代わりに、上端の細い罫線だけで項目を区切る
@@ -36,8 +37,14 @@ export default function ServiceListItem({ service, index }: { service: Service; 
           />
         </div>
       ) : null}
+      {/* 見出し自体も詳細ページへのリンクにする（「詳しく見る」まで目で追わなくても遷移できるように） */}
       <h3 className="font-display text-lg font-bold tracking-jp text-brand-navy sm:text-xl">
-        <span className="text-brand-accent">{index + 1}.</span> {service.title}
+        <Link
+          href={href}
+          className="rounded underline-offset-4 hover:text-brand-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+        >
+          <span className="text-brand-accent">{index + 1}.</span> {service.title}
+        </Link>
       </h3>
       {/*
         補足（〜にまつわる悩み）は見出しと同じ行に置かず、下の行に分ける。
@@ -54,10 +61,12 @@ export default function ServiceListItem({ service, index }: { service: Service; 
         ))}
       </ul>
       <Link
-        href={`/services#${service.id}`}
+        href={href}
         className="mt-4 inline-flex items-center gap-1 rounded text-sm font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
       >
         詳しく見る
+        {/* 読み上げでは 4 つの「詳しく見る」を区別できないため、事業名を補う */}
+        <span className="sr-only">（{service.title}）</span>
         <span aria-hidden="true">→</span>
       </Link>
     </article>

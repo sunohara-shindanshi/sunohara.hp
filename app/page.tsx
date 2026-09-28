@@ -12,7 +12,7 @@ import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
 import { fetchLinkedPosts } from '@/lib/microcms';
-import { SERVICES } from '@/lib/services';
+import { SERVICES, buildServiceHref } from '@/lib/services';
 import { SITE_URL, siteConfig, telHref } from '@/lib/siteConfig';
 import type { BlogListItem } from '@/types/blog';
 
@@ -66,6 +66,7 @@ const jsonLd = {
         '@type': 'Service',
         name: service.title,
         description: service.description,
+        url: `${SITE_URL}${buildServiceHref(service.id)}`,
       },
     })),
   },

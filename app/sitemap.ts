@@ -2,12 +2,14 @@ import type { MetadataRoute } from 'next';
 
 import { buildBlogPostHref } from '@/lib/blogUrl';
 import { fetchBlogSitemapEntries } from '@/lib/microcms';
+import { SERVICES, buildServiceHref } from '@/lib/services';
 import { NAV_ITEMS, SITE_URL } from '@/lib/siteConfig';
 
 /**
  * /sitemap.xml を生成する（Next.js のファイル規約）。
  *
- * 固定ページは NAV_ITEMS（= サイト内の全 5 ページ）から、記事 URL は microCMS から生成する。
+ * 固定ページは NAV_ITEMS（= サイト内の全 5 ページ）から、事業ごとの詳細ページは lib/services.ts から、
+ * 記事 URL は microCMS から生成する。
  * 末尾スラッシュは next.config.ts の trailingSlash: false に合わせて付けない。
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -18,6 +20,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: item.href === '/blog' ? 'weekly' : 'monthly',
     priority: item.href === '/' ? 1 : 0.8,
+  }));
+
+  // 事業ごとの詳細ページ（/services/{id}）。一覧は lib/services.ts で固定
+  const servicePages: MetadataRoute.Sitemap = SERVICES.map((service) => ({
+    url: `${SITE_URL}${buildServiceHref(service.id)}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.7,
   }));
 
   // microCMS に到達できない場合でも sitemap 自体は生成できるようにする
@@ -34,5 +44,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('[sitemap] 記事一覧の取得に失敗しました', error);
   }
 
-  return [...staticPages, ...articlePages];
+  return [...staticPages, ...servicePages, ...articlePages];
 }

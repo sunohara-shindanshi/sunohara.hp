@@ -4,7 +4,7 @@ import BrandMotif from '@/components/BrandMotif';
 import Container from '@/components/Container';
 import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
-import { SERVICES } from '@/lib/services';
+import { SERVICES, buildServiceHref } from '@/lib/services';
 import { NAV_ITEMS, siteConfig, telHref } from '@/lib/siteConfig';
 
 /** 全ページ共通フッター（app/layout.tsx から読み込む）。 */
@@ -69,7 +69,14 @@ export default function Footer() {
             <p className="font-display text-sm font-bold tracking-jp">事業内容</p>
             <ul className="mt-4 space-y-3 text-sm text-brand-accentsoft">
               {SERVICES.map((service) => (
-                <li key={service.id}>{service.title}</li>
+                <li key={service.id}>
+                  <Link
+                    href={buildServiceHref(service.id)}
+                    className="rounded transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accentsoft"
+                  >
+                    {service.title}
+                  </Link>
+                </li>
               ))}
             </ul>
             <Link

@@ -40,6 +40,8 @@ export const CTA_NAMES = {
   ARTICLE_HEADER_CONTACT: 'article_header_contact',
   /** 記事詳細サイドバーの「支援内容を見る」 */
   ARTICLE_SIDEBAR_SERVICES: 'article_sidebar_services',
+  /** 事業ごとの詳細ページ（/services/{id}）末尾の CTA 帯。どの事業かは page_path で分かる */
+  SERVICE_DETAIL_CONTACT: 'service_detail_contact',
   /** お問い合わせページの電話番号 */
   CONTACT_PAGE_TEL: 'contact_page_tel',
   /** 代表者プロフィールからのお問い合わせ */

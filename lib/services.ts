@@ -5,7 +5,13 @@
  */
 
 export type Service = {
-  /** アンカー / key 用の識別子（英小文字とハイフンのみ） */
+  /**
+   * 識別子（英小文字とハイフンのみ）。次の 3 か所で共通に使う。
+   * - 詳細ページの URL（/services/{id}）
+   * - microCMS「事業内容」API のコンテンツ ID
+   * - イラスト画像のファイル名（public/services/{id}.png など）
+   * 公開後に変えると URL が変わる（検索結果・ブックマークが切れる）ため、変更しないこと。
+   */
   id: 'finance' | 'hr' | 'sales' | 'it';
   /** 領域名 */
   title: string;
@@ -16,8 +22,8 @@ export type Service = {
   /** 具体的な支援メニュー（カード内・詳細の箇条書きで使用） */
   points: readonly string[];
   /**
-   * 事業内容ページで表示する補足説明。
-   * TODO: 文面は暫定です。実際の支援内容に合わせて調整してください（README「差し替えが必要な箇所」参照）。
+   * 詳細ページ（/services/{id}）冒頭の説明文の既定値。
+   * microCMS の lead を入力するとそちらが優先される。
    */
   detail: string;
 };
@@ -70,6 +76,16 @@ export const SERVICES: readonly Service[] = [
       'システムは導入すること自体が目的になりがちですが、大事なのは現場が実際に使えるかどうかです。新規開発・導入から既存業務の効率化まで、業務の実態に合わせて設計し、無理なく定着する形に落とし込みます。',
   },
 ] as const;
+
+/** 事業ごとの詳細ページの URL */
+export function buildServiceHref(id: Service['id']): string {
+  return `/services/${id}`;
+}
+
+/** URL の id から事業を探す（該当なしは undefined） */
+export function findService(id: string): Service | undefined {
+  return SERVICES.find((service) => service.id === id);
+}
 
 /** お問い合わせフォームの「ご相談内容」セレクトの選択肢（事業内容と順序・名称を揃える） */
 export const CONTACT_SUBJECTS: readonly string[] = [

@@ -1,9 +1,9 @@
 /**
  * microCMS のリッチエディタ本文を表示する。
  *
- * ⚠ 渡す HTML は、必ず lib/richText.ts の prepareArticleBody（内部で sanitizeRichText を実行）を
- *   通したサニタイズ済みのものにすること。ここでは再サニタイズしない。
- *   サニタイズは 1 箇所（prepareArticleBody）に集約している。ここで二重に sanitize すると、
+ * ⚠ 渡す HTML は、必ず lib/richText.ts の prepareArticleBody / prepareRichTextFragment
+ *   （内部で sanitizeRichText を実行）を通したサニタイズ済みのものにすること。ここでは再サニタイズしない。
+ *   サニタイズは lib/richText.ts に集約している。ここで二重に sanitize すると、
  *   見出しの段下げ（h1→h2, h2→h3 …）が二重適用されて階層が崩れるため。
  * このコンポーネントと components/JsonLd.tsx 以外で dangerouslySetInnerHTML を使わないこと。
  */

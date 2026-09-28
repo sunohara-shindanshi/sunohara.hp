@@ -10,7 +10,7 @@ import SocialLinks from '@/components/SocialLinks';
 import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
-import { SERVICES } from '@/lib/services';
+import { SERVICES, buildServiceHref } from '@/lib/services';
 import { siteConfig, telHref } from '@/lib/siteConfig';
 
 export const metadata = buildPageMetadata({
@@ -113,7 +113,12 @@ export default function AboutPage() {
                 {SERVICES.map((service) => (
                   <li key={service.id}>
                     <p className="font-medium text-brand-navy">
-                      {service.title}
+                      <Link
+                        href={buildServiceHref(service.id)}
+                        className="rounded underline underline-offset-4 hover:text-brand-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                      >
+                        {service.title}
+                      </Link>
                       <span className="ml-1 text-xs font-normal text-brand-muted">
                         （{service.subtitle}）
                       </span>

@@ -223,6 +223,15 @@ export type PreparedArticleBody = {
   toc: TocItem[];
 };
 
+/**
+ * 記事以外のリッチエディタ本文（事業内容ページの各ブロックの詳細など）を表示用に整える。
+ * サニタイズと埋め込みリンクの差し替えだけを行い、見出しの id 振り・目次の組み立ては行わない
+ * （1 ページに本文が複数あるため、prepareArticleBody を使うと id が重複してしまう）。
+ */
+export async function prepareRichTextFragment(rawHtml: string): Promise<string> {
+  return resolveEmbeddedLinkCards(sanitizeRichText(rawHtml));
+}
+
 export async function prepareArticleBody(rawHtml: string): Promise<PreparedArticleBody> {
   const sanitized = sanitizeRichText(rawHtml);
   const safeHtml = await resolveEmbeddedLinkCards(sanitized);
