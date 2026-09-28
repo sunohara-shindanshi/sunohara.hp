@@ -8,6 +8,7 @@ import JsonLd from '@/components/JsonLd';
 import PrimaryCta from '@/components/PrimaryCta';
 import SectionHeading from '@/components/SectionHeading';
 import ServiceListItem from '@/components/ServiceListItem';
+import StrengthList from '@/components/StrengthList';
 import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
@@ -181,10 +182,20 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 最近のブログ（ファーストビューのすぐ下）。
-          白地にして、次の「事業内容」セクション（水色）との縞模様を作る。 */}
+      {/* 当社の特徴（ファーストビューのすぐ下）。
+          以降は 白（特徴）→ 水色（ブログ）→ 白（事業内容）→ 水色（進め方）の縞模様。 */}
+      <section className="bg-brand-surface py-14 sm:py-20">
+        <Container>
+          <SectionHeading label="Strengths">当社の特徴</SectionHeading>
+          <div className="mt-10">
+            <StrengthList />
+          </div>
+        </Container>
+      </section>
+
+      {/* 最近のブログ。水色地にして、前後の白いセクションと縞模様を作る。 */}
       {recentPosts.length > 0 ? (
-        <section className="bg-brand-surface py-14 sm:py-20">
+        <section className="border-t border-brand-line bg-brand-bg py-14 sm:py-20">
           <Container>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <SectionHeading label="Blog">最近のブログ</SectionHeading>
@@ -207,8 +218,8 @@ export default async function HomePage() {
         </section>
       ) : null}
 
-      {/* 事業内容。水色地にして、前後の白いセクションと縞模様を作る */}
-      <section className="border-t border-brand-line bg-brand-bg py-16 sm:py-24">
+      {/* 事業内容。白地にして、前後の水色のセクションと縞模様を作る */}
+      <section className="border-t border-brand-line bg-brand-surface py-16 sm:py-24">
         <Container>
           <SectionHeading label="Services">事業内容</SectionHeading>
           {/*
@@ -234,8 +245,8 @@ export default async function HomePage() {
         </Container>
       </section>
 
-      {/* 支援の進め方 */}
-      <section className="border-y border-brand-line bg-brand-surface py-16 sm:py-24">
+      {/* 支援の進め方。水色地 */}
+      <section className="border-y border-brand-line bg-brand-bg py-16 sm:py-24">
         <Container>
           <SectionHeading label="Approach">
             「{siteConfig.catchphrase}」の進め方

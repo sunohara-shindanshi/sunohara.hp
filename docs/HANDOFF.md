@@ -40,6 +40,7 @@
   ファイル名は `finance` / `hr` / `sales` / `it` ＋ 拡張子（webp/png/jpg/jpeg）。
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - **ブランチのマージ判断**（上記）。
+- **「当社の特徴」の文章確認とイラスト**：`lib/strengths.ts` の文章は案。イラストは `public/strengths/` に置く。
 - **microCMS に「事業内容」API（`services`）を作成し、4 事業分の本文を入力**。
   作り方は README「7. ブログ（microCMS）」→「事業内容の詳細ページ」。
   コンテンツ ID を `finance` / `hr` / `sales` / `it` にするのを忘れると表示されない（仮表示のまま）。
@@ -108,6 +109,15 @@
 - `/services` の「支援開始までの流れ」の白い角丸カードを外し、罫線区切りに（角丸カードを避ける方針）
 - 本文の処理は `lib/richText.ts` の `prepareRichTextFragment`（サニタイズ＋埋め込み変換。目次 id は振らない）
 
+### トップページ「当社の特徴」（`feature/service-pages` ブランチ）
+- ヒーローと「最近のブログ」の間に追加（ユーザー指定：「ブログの1個上」）。3 項目、罫線区切り（角丸カードなし）
+- ユーザーの選択（2026-09-28）：文章は **今のHPの内容から案を作成**／管理は **コード側**（`lib/strengths.ts`）／
+  イラストは **`public/strengths/strength-1〜3.png` を置けば表示**（`public/strengths/README.md`）
+- 文章は案の段階。ユーザーの言葉への差し替えがありうる
+- 背景の縞模様を 1 つずつずらした：特徴（白）→ ブログ（水色）→ 事業内容（白）→ 進め方（水色）
+- 見出しは「、」の後でしか折り返さないようにしている（語の途中の改行を避ける。ユーザーが以前から気にしている点）
+- イラスト検出は `lib/publicImages.ts` の `findPublicImage` に共通化（事業内容と共用）
+
 ---
 
 ## 4. ユーザーの好み・判断基準（重要）
@@ -143,6 +153,7 @@
 | 用途 | ファイル |
 |---|---|
 | サイト共通情報（屋号・住所・電話・代表者・SNS） | `lib/siteConfig.ts` |
+| トップ「当社の特徴」 | `lib/strengths.ts` / `components/StrengthList.tsx`（画像 `public/strengths/`） |
 | 事業内容の 4 領域 | `lib/services.ts` |
 | 事業ごとの詳細ページ | `app/services/[id]/page.tsx` / `components/ServiceSectionBlock.tsx` / `lib/microcms.ts` の `fetchServicePage` / `types/service.ts` |
 | 事業内容の一覧項目 | `components/ServiceListItem.tsx` |
@@ -160,3 +171,4 @@
 
 - 2026-09-28：初版作成（上記までの作業を集約）
 - 2026-09-28：事業ごとの詳細ページを追加（`feature/service-pages` ブランチ）。microCMS の API 作成はユーザー待ち
+- 2026-09-28：トップページに「当社の特徴」を追加（同ブランチ）。文章の確認・イラストはユーザー待ち
