@@ -40,7 +40,7 @@
   ファイル名は `finance` / `hr` / `sales` / `it` ＋ 拡張子（webp/png/jpg/jpeg）。
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - **ブランチのマージ判断**（上記）。
-- **「当社の特徴」の文章確認とイラスト**：`lib/strengths.ts` の文章は案。イラストは `public/strengths/` に置く。
+- **「当社の特徴」の文章確認**：`lib/strengths.ts` の本文（書き出し以降）は案。「守備範囲」の表記も確認待ち。
 - **microCMS に「事業内容」API（`services`）を作成し、4 事業分の本文を入力**。
   作り方は README「7. ブログ（microCMS）」→「事業内容の詳細ページ」。
   コンテンツ ID を `finance` / `hr` / `sales` / `it` にするのを忘れると表示されない（仮表示のまま）。
@@ -110,13 +110,13 @@
 - 本文の処理は `lib/richText.ts` の `prepareRichTextFragment`（サニタイズ＋埋め込み変換。目次 id は振らない）
 
 ### トップページ「当社の特徴」（`feature/service-pages` ブランチ）
-- ヒーローと「最近のブログ」の間に追加（ユーザー指定：「ブログの1個上」）。3 項目、罫線区切り（角丸カードなし）
-- ユーザーの選択（2026-09-28）：文章は **今のHPの内容から案を作成**／管理は **コード側**（`lib/strengths.ts`）／
-  イラストは **`public/strengths/strength-1〜3.png` を置けば表示**（`public/strengths/README.md`）
-- 文章は案の段階。ユーザーの言葉への差し替えがありうる
+- ヒーローと「最近のブログ」の間に追加（ユーザー指定：「ブログの1個上」）。管理は **コード側**（`lib/strengths.ts` / `components/Strengths.tsx`）
+- 最初は 3 項目の一覧＋イラストで作ったが、ユーザーの指示で **「キャッチフレーズを中央上部 → 本文」** の形に変更（一覧・イラストの仕組みは削除）
+  - キャッチフレーズ：**「圧倒的な守備範囲×実行力」**。ユーザーの原文は「守備半」で、「守備範囲」の誤字と判断して修正した（要確認）
+  - 本文の書き出し「当事務所では、これまで業種業界問わず様々な経営支援を行ってきました。」はユーザー指定。続きは既存の内容から作成した案
+  - キャッチフレーズは「×」の前でしか折り返さない。スマホ幅 375px でも 1 行に収まるサイズ（26px）から始めている
 - 背景の縞模様を 1 つずつずらした：特徴（白）→ ブログ（水色）→ 事業内容（白）→ 進め方（水色）
-- 見出しは「、」の後でしか折り返さないようにしている（語の途中の改行を避ける。ユーザーが以前から気にしている点）
-- イラスト検出は `lib/publicImages.ts` の `findPublicImage` に共通化（事業内容と共用）
+- イラスト検出は `lib/publicImages.ts` の `findPublicImage` に共通化（現在は事業内容のみで使用）
 
 ---
 
@@ -153,7 +153,7 @@
 | 用途 | ファイル |
 |---|---|
 | サイト共通情報（屋号・住所・電話・代表者・SNS） | `lib/siteConfig.ts` |
-| トップ「当社の特徴」 | `lib/strengths.ts` / `components/StrengthList.tsx`（画像 `public/strengths/`） |
+| トップ「当社の特徴」 | `lib/strengths.ts`（文章） / `components/Strengths.tsx`（表示） |
 | 事業内容の 4 領域 | `lib/services.ts` |
 | 事業ごとの詳細ページ | `app/services/[id]/page.tsx` / `components/ServiceSectionBlock.tsx` / `lib/microcms.ts` の `fetchServicePage` / `types/service.ts` |
 | 事業内容の一覧項目 | `components/ServiceListItem.tsx` |
@@ -171,4 +171,5 @@
 
 - 2026-09-28：初版作成（上記までの作業を集約）
 - 2026-09-28：事業ごとの詳細ページを追加（`feature/service-pages` ブランチ）。microCMS の API 作成はユーザー待ち
-- 2026-09-28：トップページに「当社の特徴」を追加（同ブランチ）。文章の確認・イラストはユーザー待ち
+- 2026-09-28：トップページに「当社の特徴」を追加（同ブランチ）
+- 2026-09-28：「当社の特徴」をキャッチフレーズ（圧倒的な守備範囲×実行力）＋本文の形に変更。本文の続きは案として作成、ユーザー確認待ち

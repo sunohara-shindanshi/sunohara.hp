@@ -8,7 +8,7 @@ const SUPPORTED_EXTENSIONS = ['webp', 'png', 'jpg', 'jpeg'] as const;
  * public/{dir}/{name}.{拡張子} を探し、見つかれば公開 URL を返す。
  *
  * 「ファイルを置くだけで反映される」イラストのための共通処理
- * （事業内容：public/services/、当社の特徴：public/strengths/）。
+ * （現在の利用箇所：事業内容の public/services/）。
  * 対応拡張子のいずれかでファイルを置けば自動的に使われ、無ければ null を返す。
  *
  * ファイルシステムを直接見るため、この関数は Server Component からのみ呼び出すこと

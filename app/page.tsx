@@ -8,7 +8,7 @@ import JsonLd from '@/components/JsonLd';
 import PrimaryCta from '@/components/PrimaryCta';
 import SectionHeading from '@/components/SectionHeading';
 import ServiceListItem from '@/components/ServiceListItem';
-import StrengthList from '@/components/StrengthList';
+import Strengths from '@/components/Strengths';
 import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
@@ -184,12 +184,9 @@ export default async function HomePage() {
 
       {/* 当社の特徴（ファーストビューのすぐ下）。
           以降は 白（特徴）→ 水色（ブログ）→ 白（事業内容）→ 水色（進め方）の縞模様。 */}
-      <section className="bg-brand-surface py-14 sm:py-20">
+      <section className="bg-brand-surface py-16 sm:py-24">
         <Container>
-          <SectionHeading label="Strengths">当社の特徴</SectionHeading>
-          <div className="mt-10">
-            <StrengthList />
-          </div>
+          <Strengths />
         </Container>
       </section>
 
