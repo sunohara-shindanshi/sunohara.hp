@@ -59,7 +59,7 @@ export const SERVICES: readonly Service[] = [
   },
   {
     id: 'sales',
-    title: '営業・売上',
+    title: '営業・マーケティング',
     subtitle: '売上にまつわる悩み',
     description: '営業支援、業務効率化支援（営業プロセス関連）',
     points: ['営業支援', '業務効率化支援（営業プロセス関連）'],
