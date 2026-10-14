@@ -18,10 +18,10 @@
 |---|---|
 | `main` | **「現在の本番相当のHP」**。コミット `f50d127`（文章・配色の見直し）まで |
 | `layout/arights-comparison` | arights.com を参考にしたレイアウト改修。`main` から分岐し、以下 4 コミットを追加 |
-| `feature/service-pages` ← **今ここ** | 事業ごとの詳細ページ（本文は microCMS）。`layout/arights-comparison` から分岐 |
+| `feature/service-pages` | 事業ごとの詳細ページ（本文は microCMS）。`layout/arights-comparison` から分岐 |
 
-ブランチは `main` → `layout/arights-comparison` → `feature/service-pages` の順に積み重なっている。
-`feature/service-pages` を `main` にマージすると、レイアウト改修もまとめて入る点に注意。
+**2026-10 時点：ユーザーが `feature/service-pages` を `main` に取り込み済み**（`main` の `99aa78a`「事業内容書き方変更」はユーザー自身のコミット）。
+以降の作業は `main` 上で行っている。下の「まだマージしていない」等の記述は取り込み前の経緯として残している。
 
 `layout/arights-comparison` の追加コミット：
 
@@ -39,7 +39,8 @@
 - **事業内容のイラスト画像**：ユーザーが探して `public/services/` に置く予定。
   ファイル名は `finance` / `hr` / `sales` / `it` ＋ 拡張子（webp/png/jpg/jpeg）。
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
-- **ブランチのマージ判断**（上記）。
+- ~~ブランチのマージ判断~~ → ユーザーが `main` に取り込み済み。
+- **microCMS にカスタム class `highlight`（強調枠）を追加**：`blogs` の本文の詳細設定。手順は README「強調枠」。
 - **「当社の特徴」の確認**：誤字の修正 2 か所（守備半→守備範囲、クラインとの→クライアントの）。
 - **microCMS に「事業内容」API（`services`）を作成し、4 事業分の本文を入力**。
   作り方は README「7. ブログ（microCMS）」→「事業内容の詳細ページ」。
@@ -69,6 +70,8 @@
   「この記事でわかること」（`keyPoints`）、開閉式の目次、コラム枠（本文で class="column"）
 - 本文の見出しはサニタイズで1段下げている（microCMS の 見出し1→`h2`、見出し2→`h3`、見出し3→`h4`）
 - 見出しデザイン：見出し1＝左の縦線、見出し2＝文字幅の下線、見出し3＝先頭ハイフン（`app/globals.css`）
+- 本文の枠（microCMS のカスタム class）：`column`＝コラム（淡い青・角丸・ラベル付き）、
+  `highlight`＝強調枠（計算式・目立たせたい一文。太い青線の四角＋淡い黄色、太字・中央揃え）。どちらも `app/globals.css`
 - 画像は WebP 配信（`next/image` と microCMS 画像の `fm=webp`）
 
 ### 計測（GA4 + GTM）
@@ -183,3 +186,6 @@
 - 2026-09-28：「当社の特徴」をキャッチフレーズ（圧倒的な守備範囲×実行力）＋本文の形に変更
 - 2026-09-28：キャッチフレーズを縦 3 段に、本文をユーザーの文章に差し替え、`**` による強調表示を追加
 - 2026-09-28：キャッチフレーズ〜本文を四角い枠で囲み、PC でのキャッチフレーズを 60px → 36px に縮小
+- 2026-10-07：Search Console「代替ページ（適切な canonical タグあり）」の相談。本番のサイトマップ 23 URL すべてで
+  canonical が自己参照・index 可、http／www なしは 308 転送を確認。パラメータ付き URL 等の正常な報告と判断し、コード修正なし
+- 2026-10-14：ブログ本文用のカスタム class `highlight`（強調枠）を追加（`main` 上）

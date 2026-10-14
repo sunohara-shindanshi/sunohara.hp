@@ -110,6 +110,37 @@
   }
 
   /*
+   * 強調枠（計算式・特に目立たせたい一文）
+   * microCMS のリッチエディタでカスタムclass「highlight」を付けると、
+   * 太い青線の四角い枠＋淡い黄色の地で、文字を大きめ・太字・中央揃えにして表示する。
+   * コラム（.column：角丸の淡い青＋ラベル付き＝補足の読み物）と見分けがつくよう、
+   * こちらは角を丸めず、ラベルも付けない（式や結論の一文をそのまま見せる）。
+   * 出力のされ方（<span> / <p>）と class の許可は .column と同じ。
+   */
+  .prose :where(p, span).highlight {
+    display: block;
+    margin-block: 1.75em;
+    border: 2px solid theme('colors.brand.accent');
+    /* 本文の強調マーカー（components/Strengths.tsx）と同じ黄色を、さらに薄くして地に使う */
+    background-color: #fff8e6;
+    padding: 1.1rem 1.25rem;
+    text-align: center;
+    /* 複数行になったとき、行の長さがそろうように折り返す（対応ブラウザのみ） */
+    text-wrap: balance;
+    font-size: 1.125em;
+    font-weight: 700;
+    line-height: 1.8;
+    /* 数字の幅をそろえ、計算式の桁が読みやすいようにする */
+    font-variant-numeric: tabular-nums;
+    color: theme('colors.brand.navy');
+  }
+
+  /* span.highlight を包む段落 <p> 側の余白で二重に空くのを防ぐ（.column と同じ理由） */
+  .prose p:has(> span.highlight:only-child) {
+    margin: 0;
+  }
+
+  /*
    * 埋め込みカード（記事本文の「埋め込み」リンクを、記事情報付きのカードとして表示する）
    *
    * microCMS の「埋め込み」は本来 Iframely（外部サービス）の script が組み立てるが、
