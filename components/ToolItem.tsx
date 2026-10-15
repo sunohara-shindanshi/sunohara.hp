@@ -22,15 +22,8 @@ export default function ToolItem({ tool, detailHtml }: { tool: Tool; detailHtml:
 
   const heading = (
     <span className="min-w-0 flex-1">
-      <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <span className="font-display text-base font-bold tracking-jp text-brand-navy sm:text-lg">
-          {tool.name}
-        </span>
-        {tool.pricing ? (
-          <span className="border border-brand-accent px-2 py-0.5 text-xs font-medium text-brand-accent">
-            {tool.pricing}
-          </span>
-        ) : null}
+      <span className="block font-display text-base font-bold tracking-jp text-brand-navy sm:text-lg">
+        {tool.name}
       </span>
       {tool.summary ? (
         <span className="mt-1 block text-sm leading-relaxed text-brand-ink">{tool.summary}</span>

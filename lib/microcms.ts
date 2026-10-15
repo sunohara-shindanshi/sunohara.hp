@@ -614,7 +614,6 @@ function parseTool(value: unknown): Tool | null {
     name,
     url: parseExternalUrl(value.url),
     summary: getString(value.summary)?.trim() ?? '',
-    pricing: getFirstString(value.pricing),
     detail: getString(value.detail) ?? '',
     article: articleId && articleTitle ? { id: articleId, title: articleTitle } : null,
     checkedAt: getString(value.checkedAt),

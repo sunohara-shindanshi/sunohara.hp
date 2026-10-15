@@ -80,9 +80,9 @@ export default async function ToolsPage() {
                 </nav>
               ) : null}
 
-              {/* 料金・機能は変わるため、確認日時点の情報であることを明記する */}
+              {/* 無料で使える範囲や機能は変わるため、確認日時点の情報であることを明記する */}
               <p className="mt-6 text-xs leading-relaxed text-brand-muted">
-                ※ 料金や機能は、各ツールの「情報の確認日」時点のものです。最新の内容は公式サイトでご確認ください。
+                ※ 無料で使える範囲や機能は、各ツールの「情報の確認日」時点のものです。最新の内容は公式サイトでご確認ください。
               </p>
 
               <div className="mt-10 space-y-14 sm:space-y-16">

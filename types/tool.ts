@@ -23,8 +23,6 @@ export type Tool = {
   url: string | null;
   /** 一覧に出すひとこと説明 */
   summary: string;
-  /** 料金の区分（例：完全無料／無料プランあり）。未入力なら表示しない */
-  pricing?: string;
   /** 詳細（使い方など。リッチエディタの生 HTML。表示前に必ず lib/richText.ts でサニタイズする） */
   detail: string;
   /** 使い方を詳しく解説したブログ記事（任意） */
