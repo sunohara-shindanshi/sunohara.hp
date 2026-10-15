@@ -70,6 +70,17 @@ export function useLinkTracking(trackEvent: TrackEvent): void {
 
       // 1. 明示指定（data-analytics-event）
       const declaredElement = target.closest(ANALYTICS_ELEMENT_SELECTOR);
+      // 開閉式（<details>）の見出し <summary> に付けた計測は「開くとき」だけ送る。
+      // click はクリック直後・開閉が切り替わる前に届くため、この時点で open なら「閉じる操作」。
+      // （キーボードの Enter / Space で開閉した場合も click が発生するので同じ判定で済む）
+      if (
+        declaredElement instanceof HTMLElement &&
+        declaredElement.tagName === 'SUMMARY' &&
+        declaredElement.parentElement instanceof HTMLDetailsElement &&
+        declaredElement.parentElement.open
+      ) {
+        return;
+      }
       if (declaredElement) {
         const parsed = readAnalyticsAttributes(declaredElement);
         if (parsed) {

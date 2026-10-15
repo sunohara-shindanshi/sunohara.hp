@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import RichText from '@/components/RichText';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
 import { buildBlogPostHref } from '@/lib/blogUrl';
 import { formatJapaneseDate } from '@/lib/formatDate';
 import type { Tool } from '@/types/tool';
@@ -14,11 +15,26 @@ import type { Tool } from '@/types/tool';
  *   <summary> の中にリンクを入れるとクリックが開閉と競合するため、<details> の外に置いている。
  * - 詳細も記事リンクも無いツールは開閉させず、名前と説明だけを表示する。
  * - 角丸・影の囲みは付けず、上端の罫線だけで行を区切る（サイト全体の方針）。
- * 外部リンクのクリックは components/analytics/useLinkTracking.ts が自動で計測する（external_link_click）。
+ *
+ * 計測（GA4。data-analytics-* 属性を付けるだけで useLinkTracking が送信する）：
+ * - 詳細を開いた        → tool_detail_open（閉じたときは送らない）
+ * - 「公式サイト」       → tool_link_click（汎用の external_link_click の代わりにこちらだけが送られる）
+ * - 「使い方の記事を読む」→ tool_article_click
+ * いずれも tool_name / tool_category 付き。詳しくは docs/analytics.md。
  */
-export default function ToolItem({ tool, detailHtml }: { tool: Tool; detailHtml: string }) {
+export default function ToolItem({
+  tool,
+  categoryName,
+  detailHtml,
+}: {
+  tool: Tool;
+  /** 一覧で表示している分類名（計測の tool_category に使う） */
+  categoryName: string;
+  detailHtml: string;
+}) {
   const checkedDate = tool.checkedAt ? formatJapaneseDate(tool.checkedAt) : null;
   const hasDetail = Boolean(detailHtml || tool.article || checkedDate);
+  const toolParams = { tool_name: tool.name, tool_category: categoryName };
 
   const heading = (
     <span className="min-w-0 flex-1">
@@ -35,7 +51,10 @@ export default function ToolItem({ tool, detailHtml }: { tool: Tool; detailHtml:
     <li className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 border-t border-brand-line py-5">
       {hasDetail ? (
         <details className="group">
-          <summary className="flex cursor-pointer list-none items-start gap-3 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent [&::-webkit-details-marker]:hidden">
+          <summary
+            {...analyticsAttributes('tool_detail_open', toolParams)}
+            className="flex cursor-pointer list-none items-start gap-3 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent [&::-webkit-details-marker]:hidden"
+          >
             {/* 開閉の目印（閉じているときは右向き、開くと下向きに回転） */}
             <svg
               viewBox="0 0 20 20"
@@ -60,6 +79,10 @@ export default function ToolItem({ tool, detailHtml }: { tool: Tool; detailHtml:
               <p className={detailHtml ? 'mt-5' : undefined}>
                 <Link
                   href={buildBlogPostHref(tool.article.id)}
+                  {...analyticsAttributes('tool_article_click', {
+                    ...toolParams,
+                    to_article: tool.article.id,
+                  })}
                   className="rounded text-sm font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
                 >
                   使い方の記事を読む：{tool.article.title}
@@ -85,6 +108,7 @@ export default function ToolItem({ tool, detailHtml }: { tool: Tool; detailHtml:
           href={tool.url}
           target="_blank"
           rel="noopener noreferrer"
+          {...analyticsAttributes('tool_link_click', { ...toolParams, link_url: tool.url })}
           className="mt-0.5 inline-flex shrink-0 items-center gap-1 self-start whitespace-nowrap rounded border border-brand-navy px-3 py-1.5 text-xs font-medium text-brand-navy transition-colors hover:bg-brand-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
         >
           公式サイト

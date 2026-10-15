@@ -120,6 +120,28 @@
 | `form_start` | 最初の入力操作（1 回だけ） | `useFormTracking` |
 | `form_submit` | 送信**成功**時 | `ContactForm` |
 | `toc_click` | 記事の目次項目のクリック | `TableOfContents` |
+| `tool_detail_open` | 便利ツール一覧（/tools）でツールの詳細を**開いた**とき（閉じたときは送らない） | `ToolItem` |
+| `tool_link_click` | 便利ツール一覧の「公式サイト」ボタンのクリック | `ToolItem` |
+| `tool_article_click` | 便利ツール一覧の詳細内「使い方の記事を読む」のクリック | `ToolItem` |
+
+### 便利ツール一覧（/tools）の計測
+
+| 操作 | 送信されるイベント | 主なパラメータ |
+| --- | --- | --- |
+| ツールの詳細を開く | `tool_detail_open` | `tool_name`, `tool_category` |
+| 「公式サイト」ボタン | `tool_link_click` | `tool_name`, `tool_category`, `link_url` |
+| 「使い方の記事を読む」 | `tool_article_click` | `tool_name`, `tool_category`, `to_article` |
+| 上部の分類リンク（ページ内移動） | `category_select`（既存） | `category_name`, `list_name = tools_nav` |
+| 分類の下の「〇〇の支援」 | `cta_click`（既存） | `cta_name = tools_service`, `cta_location = tools` |
+| 末尾の「ツールについて相談する」 | `cta_click`（既存） | `cta_name = tools_contact` |
+
+- `tool_name` は microCMS のツール名、`tool_category` は分類名（未選択は「その他」）がそのまま入ります。
+  ツールを追加しても **コード・GTM の修正は不要**です。
+- 「公式サイト」ボタンは外部リンクですが、**汎用の `external_link_click` は送らず `tool_link_click` だけ**を送ります
+  （明示指定の計測が優先されるため。二重計測になりません）。
+- 詳細の開閉は `<summary>` のクリックで判定し、**開くときだけ**送ります（`useLinkTracking` の `<summary>` の扱い）。
+  何度も開け閉めすると、開いた回数ぶん送られます。
+- 詳細の中の本文に貼った外部リンクは、これまでどおり `external_link_click` で自動計測されます。
 
 ### `toc_click`（目次クリック）
 
@@ -196,6 +218,9 @@
 | `tag_select` | `tag_name`, `tag_slug`, `list_name` |
 | `form_view` / `form_start` / `form_submit` | `form_name`, `form_id` |
 | `toc_click` | `toc_text`, `toc_anchor`, `toc_level`（**数値**: 2 = H2 / 3 = H3） |
+| `tool_detail_open` | `tool_name`, `tool_category` |
+| `tool_link_click` | `tool_name`, `tool_category`, `link_url` |
+| `tool_article_click` | `tool_name`, `tool_category`, `to_article` |
 
 ### `list_name` の値
 
@@ -207,14 +232,17 @@
 | `related` | 記事ページの「関連記事」 |
 | `recent` | 記事ページの「最近の投稿」 |
 | `blog_category_filter` | カテゴリ絞り込み |
+| `tools_nav` | 便利ツール一覧の上部の分類リンク（`category_select`） |
 
 ### `cta_name` の値
 
 `lib/analytics/ctaNames.ts` を参照（`header_contact` / `header_tel` / `hero_contact` / `hero_tel` /
 `page_header_contact` / `page_header_tel` / `section_contact` / `section_tel` / `footer_contact` /
 `footer_tel` / `article_header_tel` / `article_header_contact` / `article_sidebar_services` /
-`service_detail_contact` / `contact_page_tel` / `profile_contact` / `profile_note` / `profile_x`）。
+`service_detail_contact` / `tools_service` / `tools_contact` / `contact_page_tel` / `profile_contact` /
+`profile_note` / `profile_x`）。
 `service_detail_contact` は事業ごとの詳細ページ（`/services/{id}`）末尾の CTA です。どの事業のページかは `page_path` で見分けます。
+`tools_service` は便利ツール一覧の分類の下にある「〇〇の支援」（事業内容の詳細ページへ）、`tools_contact` は便利ツール一覧の末尾の CTA です。
 `mailto:` / `tel:` リンクは、属性が無くても `cta_name = email` / `tel` として自動計測されます。
 
 ---
@@ -297,7 +325,7 @@
 > 標準レポートで行がまとめられて `(other)` になり、**他のディメンションの精度まで巻き添えで落ちます**。
 > 送信しているパラメータをすべて登録する必要はありません（詳しくは後述）。
 
-### 登録する（9 個）
+### 登録する（11 個）
 
 | # | ディメンション名 | パラメータ | 値の種類（目安） | 用途 |
 | --- | --- | --- | --- | --- |
@@ -309,7 +337,9 @@
 | 6 | CTA設置場所 | `cta_location` | 7 | 設置場所別の効果 |
 | 7 | リスト名 | `list_name` | 6 | どの一覧・欄からの遷移か |
 | 8 | 遷移先記事 | `to_article` | 記事数 | 回遊先（関連記事・おすすめの効果） |
-| 9 | カテゴリ名 | `category_name` | 9 | カテゴリ絞り込みのクリック |
+| 9 | カテゴリ名 | `category_name` | 9 | カテゴリ絞り込みのクリック（便利ツールの分類リンクも含む） |
+| 10 | ツール名 | `tool_name` | 掲載ツール数 | 便利ツール一覧で**どのツールが開かれ・公式サイトへ飛ばれたか**（2026-10 追加） |
+| 11 | ツール分類 | `tool_category` | 5 前後 | 便利ツールの分類別の関心（2026-10 追加） |
 
 **カスタム指標（1 個）**（範囲＝イベント、単位＝標準）
 
@@ -369,7 +399,7 @@
 - どうしても全パラメータを分析したくなったら、**BigQuery エクスポート**（GA4 の無料枠あり）を
   有効にすると、カスタムディメンションを登録していないパラメータも SQL で扱えます。
 
-### この 9 個で分析できること
+### この 11 個で分析できること
 
 | 知りたいこと | 使うディメンション |
 | --- | --- |
@@ -383,6 +413,11 @@
 | 一覧のどこから記事に入ったか | `list_name` × `article_id` |
 | カテゴリ絞り込みの利用状況 | `category_name` |
 | 記事の長さと読了率の関係 | `word_count`（指標） |
+| どのツールに関心があるか（詳細を開いた数） | イベント名 `tool_detail_open` × `tool_name` |
+| どのツールが実際に使われそうか（公式サイトへの移動） | イベント名 `tool_link_click` × `tool_name` |
+| 詳細を読んでから公式サイトへ行った割合 | `tool_name` ごとに `tool_link_click` ÷ `tool_detail_open` |
+| どの分野のツールが見られているか | `tool_category` |
+| ツールから記事・事業内容・相談へ進んだか | `tool_article_click`、`cta_name`（`tools_service` / `tools_contact`） |
 
 ### キーイベント（旧コンバージョン）
 
@@ -440,7 +475,11 @@ tag_slug          {{DLV - tag_slug}}
 form_name         {{DLV - form_name}}
 form_id           {{DLV - form_id}}
 percent_scrolled  {{DLV - percent_scrolled}}
+tool_name         {{DLV - tool_name}}
+tool_category     {{DLV - tool_category}}
 ```
+
+> `tool_name` / `tool_category` は便利ツール一覧の計測のために 2026-10 に追加した 2 行です。
 
 値が空の変数は GA4 に送信されないため、全イベントで同じ設定を使い回せます。
 **タグはこの 2 つだけ**です。新しいイベントを追加してもタグの追加は不要です。
@@ -478,7 +517,7 @@ percent_scrolled  {{DLV - percent_scrolled}}
 厳密に列挙したい場合は、代わりに次の正規表現を使ってください（この場合はイベント追加のたびに更新が必要）。
 
 ```
-^(page_view|scroll_25|scroll_50|scroll_75|scroll_100|cta_click|related_article_click|external_link_click|pdf_download|article_select|category_select|tag_select|form_view|form_start|form_submit)$
+^(page_view|scroll_25|scroll_50|scroll_75|scroll_100|cta_click|related_article_click|external_link_click|pdf_download|article_select|category_select|tag_select|form_view|form_start|form_submit|toc_click|tool_detail_open|tool_link_click|tool_article_click)$
 ```
 
 ---
@@ -511,6 +550,7 @@ DLV - file_name            DLV - file_url
 DLV - list_name            DLV - category_name        DLV - category_slug
 DLV - tag_name             DLV - tag_slug
 DLV - form_name            DLV - form_id
+DLV - tool_name            DLV - tool_category
 ```
 
 **既定値は設定しない**でください（空のまま）。値が無いパラメータを GA4 へ送らないためです。

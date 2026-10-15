@@ -4,6 +4,8 @@ import Container from '@/components/Container';
 import CtaSection from '@/components/CtaSection';
 import PageHeader from '@/components/PageHeader';
 import ToolItem from '@/components/ToolItem';
+import { analyticsAttributes } from '@/lib/analytics/attributes';
+import { CTA_LOCATIONS, CTA_NAMES } from '@/lib/analytics/ctaNames';
 import { buildPageMetadata } from '@/lib/metadata';
 import { fetchToolDirectory } from '@/lib/microcms';
 import { prepareRichTextFragment } from '@/lib/richText';
@@ -70,6 +72,10 @@ export default async function ToolsPage() {
                       <li key={category.id}>
                         <a
                           href={`#tools-${category.id}`}
+                          {...analyticsAttributes('category_select', {
+                            category_name: category.name,
+                            list_name: 'tools_nav',
+                          })}
                           className="rounded font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
                         >
                           {category.name}
@@ -105,7 +111,12 @@ export default async function ToolsPage() {
 
                       <ul className="mt-5 border-b border-brand-line">
                         {tools.map(({ tool, detailHtml }) => (
-                          <ToolItem key={tool.id} tool={tool} detailHtml={detailHtml} />
+                          <ToolItem
+                            key={tool.id}
+                            tool={tool}
+                            categoryName={category.name}
+                            detailHtml={detailHtml}
+                          />
                         ))}
                       </ul>
 
@@ -115,6 +126,11 @@ export default async function ToolsPage() {
                           ツールの選び方や導入から相談したい場合は
                           <Link
                             href={buildServiceHref(service.id)}
+                            {...analyticsAttributes('cta_click', {
+                              cta_name: CTA_NAMES.TOOLS_SERVICE,
+                              cta_location: CTA_LOCATIONS.TOOLS,
+                              link_url: buildServiceHref(service.id),
+                            })}
                             className="mx-1 rounded font-medium text-brand-accent underline underline-offset-4 hover:text-brand-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
                           >
                             {service.title}の支援
@@ -135,6 +151,7 @@ export default async function ToolsPage() {
         heading="ツール選びや導入から相談できます"
         lead="どのツールが自社に合うか分からない、入れたものの使いこなせていない。そんな段階からでも構いません。業務の流れを伺い、合う形を一緒に考えます。"
         buttonLabel="ツールについて相談する"
+        ctaName={CTA_NAMES.TOOLS_CONTACT}
       />
     </>
   );

@@ -42,6 +42,10 @@ export const CTA_NAMES = {
   ARTICLE_SIDEBAR_SERVICES: 'article_sidebar_services',
   /** 事業ごとの詳細ページ（/services/{id}）末尾の CTA 帯。どの事業かは page_path で分かる */
   SERVICE_DETAIL_CONTACT: 'service_detail_contact',
+  /** 便利ツール一覧（/tools）の分類の下にある「〇〇の支援」（事業内容の詳細ページへ） */
+  TOOLS_SERVICE: 'tools_service',
+  /** 便利ツール一覧の末尾の CTA 帯 */
+  TOOLS_CONTACT: 'tools_contact',
   /** お問い合わせページの電話番号 */
   CONTACT_PAGE_TEL: 'contact_page_tel',
   /** 代表者プロフィールからのお問い合わせ */
@@ -59,6 +63,8 @@ export const CTA_LOCATIONS = {
   ARTICLE: 'article',
   SECTION: 'section',
   PROFILE: 'profile',
+  /** 便利ツール一覧（/tools）の本文内 */
+  TOOLS: 'tools',
 } as const;
 
 export type CtaLocation = (typeof CTA_LOCATIONS)[keyof typeof CTA_LOCATIONS];

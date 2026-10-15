@@ -46,6 +46,8 @@
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - ~~ブランチのマージ判断~~ → ユーザーが `main` に取り込み済み。
 - **`feature/tools-page` のマージ判断**と、**microCMS に `tools` API を作成**（手順は README「便利ツール一覧」）。
+- **GTM / GA4 の設定追加（便利ツールの計測）**：GTM に変数 `DLV - tool_name` / `DLV - tool_category` を作り、
+  タグ「GA4 - イベント（汎用）」のパラメータに 2 行追加 → 公開。GA4 にカスタムディメンション「ツール名」「ツール分類」を登録。
   作るまで /tools は「準備中」表示。ヘッダーメニューには「便利ツール」が出る。
 - **microCMS にカスタム class `highlight`（強調枠）、`faq-q` / `faq-a`（Q&A）を追加**：`blogs` の本文の詳細設定。手順は README「強調枠」「よくある質問（Q&A）」。
 - **「当社の特徴」の確認**：誤字の修正 2 か所（守備半→守備範囲、クラインとの→クライアントの）。
@@ -87,6 +89,7 @@
 - `trackEvent()` → `dataLayer.push()` → GTM → GA4 の構成。イベント名は `lib/analytics/events.ts` で一元管理
 - 記事パラメータ（article_id / slug / word_count / reading_time / publish_year / is_updated 等）、目次クリック（toc_click）
 - カスタムディメンションは高カーディナリティを避け **9個＋指標1個** に絞った（`docs/analytics.md` 6章）
+  → 2026-10-15 に便利ツール用の `tool_name` / `tool_category` を足して **11個＋指標1個**
 - `article_slug` は URL（`/blog/{id}`）から取得。microCMS の slug フィールドは使わない方針
 - 同意管理（Cookie バナー／Consent Mode）は **実装しない方針**（ユーザー決定）
 
@@ -135,6 +138,11 @@
 - 無料の範囲・機能は変わるため「情報の確認日」（`checkedAt`）と注記を表示（事実でないことを書かない方針）
 - **掲載はすべて無料ツール**（ユーザー談）。当初入れた料金区分の `pricing`（完全無料／無料プランあり）は不要とされ削除（2026-10-15）
 - microCMS の作成手順は README「便利ツール一覧」に詳しく記載（フィールド 8 個：name / category / summary / url / detail / article / checkedAt / order）
+- GA4 計測（2026-10-15）：新イベント `tool_detail_open`（開いたときだけ）/ `tool_link_click` / `tool_article_click`
+  （いずれも `tool_name` / `tool_category` 付き）。分類リンクは既存 `category_select`（list_name=`tools_nav`）、
+  「〇〇の支援」と末尾 CTA は既存 `cta_click`（`tools_service` / `tools_contact`）。
+  `useLinkTracking` に「`<summary>` に付けた計測は開くときだけ送る」処理を追加。
+  **ユーザー側で GTM に変数 2 つ＋タグのパラメータ 2 行、GA4 にカスタムディメンション 2 つの追加が必要**（docs/analytics.md）
 - API 未作成・0 件は「準備中」表示。分類 API が無くてもツール側の参照から分類を組み立てる
 
 ### トップページ「当社の特徴」（`feature/service-pages` ブランチ）
@@ -220,3 +228,4 @@
 - 2026-10-15：便利ツール一覧（/tools）を追加（`feature/tools-page` ブランチ）。microCMS の API 作成とマージ判断はユーザー待ち
 - 2026-10-15：microCMS 無料プランの API 数の上限のため、分類 API をやめて `tools` の `category`（セレクト）に変更
 - 2026-10-15：`pricing`（料金区分）を削除（すべて無料ツールのため）。README に microCMS の詳しい作成手順を記載
+- 2026-10-15：便利ツール一覧に GA4 計測を追加（tool_detail_open / tool_link_click / tool_article_click ほか）。GTM・GA4 の設定追加はユーザー待ち

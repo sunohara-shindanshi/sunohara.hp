@@ -27,6 +27,12 @@ export const ANALYTICS_EVENTS = {
   FORM_START: 'form_start',
   FORM_SUBMIT: 'form_submit',
   TOC_CLICK: 'toc_click',
+  /** 便利ツール一覧（/tools）：ツールの詳細を開いた（閉じたときは送らない） */
+  TOOL_DETAIL_OPEN: 'tool_detail_open',
+  /** 便利ツール一覧：「公式サイト」ボタンのクリック */
+  TOOL_LINK_CLICK: 'tool_link_click',
+  /** 便利ツール一覧：詳細内の「使い方の記事を読む」のクリック */
+  TOOL_ARTICLE_CLICK: 'tool_article_click',
 } as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
@@ -187,6 +193,28 @@ type TocClickParams = {
   toc_level: 2 | 3;
 };
 
+/**
+ * 便利ツール一覧のイベント共通。
+ * ツール名・分類名は microCMS の値をそのまま送る（どちらも件数が限られるため、
+ * GA4 のカスタムディメンションに登録しても値の種類が増えすぎない）。
+ */
+type ToolParams = {
+  /** ツール名（microCMS の name） */
+  tool_name: string;
+  /** 分類名（microCMS の category。未選択は「その他」） */
+  tool_category: string;
+};
+
+type ToolLinkClickParams = ToolParams & {
+  /** 公式サイトの URL（カスタムディメンションには登録しない。値が際限なく増えるため） */
+  link_url: string;
+};
+
+type ToolArticleClickParams = ToolParams & {
+  /** 遷移先の記事 ID（related_article_click と同じパラメータ名にそろえている） */
+  to_article: string;
+};
+
 type CategorySelectParams = {
   category_name: string;
   category_slug?: string;
@@ -227,6 +255,9 @@ export type AnalyticsEventParamsMap = {
   form_start: FormParams;
   form_submit: FormParams;
   toc_click: TocClickParams;
+  tool_detail_open: ToolParams;
+  tool_link_click: ToolLinkClickParams;
+  tool_article_click: ToolArticleClickParams;
 };
 
 /** trackEvent の型（AnalyticsProvider が提供する関数の形） */
