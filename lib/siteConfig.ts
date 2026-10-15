@@ -111,5 +111,6 @@ export const NAV_ITEMS = [
   { href: '/services', label: '事業内容' },
   { href: '/about', label: '基本情報' },
   { href: '/blog', label: 'ブログ' },
+  { href: '/tools', label: '便利ツール' },
   { href: '/contact', label: 'お問い合わせ' },
 ] as const;

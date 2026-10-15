@@ -86,6 +86,7 @@ npm run dev
 | `MICROCMS_BLOG_ENDPOINT` | ブログ利用時 | ブログ記事 API のエンドポイント名（設定仕様書の想定値：`blogs`） |
 | `MICROCMS_CATEGORY_ENDPOINT` | 任意 | カテゴリ API のエンドポイント名（設定仕様書の想定値：`categories`）。未設定でも記事一覧は表示できるが、カテゴリ絞り込みは表示されない |
 | `MICROCMS_SERVICES_ENDPOINT` | 任意 | 事業内容 API のエンドポイント名。未設定なら `services`（「7. ブログ（microCMS）」の「事業内容の詳細ページ」参照） |
+| `MICROCMS_TOOLS_ENDPOINT` / `MICROCMS_TOOL_CATEGORIES_ENDPOINT` | 任意 | 便利ツール一覧の API のエンドポイント名。未設定なら `tools` / `tool-categories` |
 | `RESEND_API_KEY` | フォーム利用時 | メール送信サービス [Resend](https://resend.com) の API キー（**サーバー側のみで使用する秘匿値**） |
 | `CONTACT_FROM_EMAIL` | フォーム利用時 | 通知メールの送信元アドレス（Resend で検証済みドメインのアドレス。テストは `onboarding@resend.dev`） |
 | `CONTACT_TO_EMAIL` | 任意 | 通知先（届け先）アドレス。未設定なら `lib/siteConfig.ts` の `contactEmail`（`sunohara.shindanshi@gmail.com`）に届く。**宛先変更はこの 1 行だけ** |
@@ -127,6 +128,7 @@ npm run dev
 | 基本情報（代表者挨拶を含む） | `/about` | `app/about/page.tsx` |
 | ブログ一覧 | `/blog` | `app/blog/(list)/page.tsx` |
 | ブログ記事詳細 | `/blog/{記事ID}` | `app/blog/[id]/page.tsx` |
+| 便利ツール一覧 | `/tools` | `app/tools/page.tsx`（中身は microCMS） |
 | お問い合わせ | `/contact` | `app/contact/page.tsx` |
 
 `(list)` は URL に影響しないルートグループです（`/blog` のまま）。読み込み中表示（`loading.tsx`）を一覧ページだけに適用し、記事詳細ページの HTML に一覧のスケルトンが混入しないようにするために使っています。
@@ -450,6 +452,55 @@ API ID を `services` 以外にした場合だけ、環境変数 `MICROCMS_SERVI
 - ブログと同じく、更新は最大 60 秒で反映されます。
 
 実装：`app/services/[id]/page.tsx`（ページ）／`components/ServiceSectionBlock.tsx`（1 ブロック）／`lib/microcms.ts` の `fetchServicePage`／`types/service.ts`
+
+### 便利ツール一覧（microCMS の `tools` / `tool-categories` API）
+
+`/tools` に、中小企業が使える無料ツールを分類ごとに一覧表示します（ヘッダーメニュー「便利ツール」）。
+ツール名の行をクリックするとその場で詳細（使い方など）が開き、行の右端の「公式サイト ↗」から公式サイトへ移動できます（別タブ。クリックは `external_link_click` として自動計測）。
+
+**microCMS 側の作り方**（ブログと同じサービス内。API キーも共通）
+
+1. **分類の API** を作る：API 名 `便利ツールの分類`、エンドポイント **`tool-categories`**、型 **リスト形式**。
+
+   | フィールド ID | 表示名 | 種類 | 必須 |
+   |---|---|---|---|
+   | `name` | 分類名 | テキストフィールド | 必須 |
+   | `order` | 表示順 | 数字 | 任意（小さいほど上。未入力は最後） |
+   | `description` | 分類の説明 | テキストエリア | 任意 |
+   | `service` | 関連する事業内容 | セレクト（選択肢：`財務・資金` / `組織・人事` / `営業・売上` / `IT・システム`） | 任意。選ぶとその分類の下に「〇〇の支援」ページへの案内が出ます |
+
+   コンテンツとして「財務・資金」「組織・人事」「営業・売上」「IT・システム」「その他」を作り、`order` に 1〜5 を入れて公開します（「その他」の `service` は空のまま）。
+
+2. **ツールの API** を作る：API 名 `便利ツール`、エンドポイント **`tools`**、型 **リスト形式**。
+
+   | フィールド ID | 表示名 | 種類 | 必須 |
+   |---|---|---|---|
+   | `name` | ツール名 | テキストフィールド | 必須 |
+   | `url` | 公式サイトの URL | テキストフィールド | 任意（`https://` から。無ければボタンを出しません） |
+   | `category` | 分類 | コンテンツ参照（`tool-categories`） | 任意（未設定は「そのほかのツール」にまとめて表示） |
+   | `summary` | ひとこと説明 | テキストフィールド | 任意（一覧の行に表示） |
+   | `pricing` | 料金 | セレクト（例：`完全無料` / `無料プランあり`） | 任意（選択肢は自由に増やせます） |
+   | `detail` | 詳細（使い方など） | リッチエディタ | 任意 |
+   | `article` | 使い方の記事 | コンテンツ参照（`blogs`） | 任意（詳しく解説したブログ記事がある場合だけ） |
+   | `checkedAt` | 情報の確認日 | 日時 | 任意（詳細の下に「情報の確認日」として表示） |
+   | `order` | 表示順 | 数字 | 任意（分類の中で小さいほど上。未入力は名前順で後ろ） |
+
+API ID を変えた場合だけ、環境変数 `MICROCMS_TOOLS_ENDPOINT` / `MICROCMS_TOOL_CATEGORIES_ENDPOINT` を設定してください。
+
+**表示のしかた**
+
+- 詳細・記事・確認日のどれも無いツールは、開閉せず名前と説明だけを表示します。
+- ツールが 1 件も無い分類は表示しません。分類が 2 つ以上あると、上部に分類へのページ内リンクを出します。
+- 詳細はブログ本文と同じサニタイズを通します。強調枠（`highlight`）や Q&A（`faq-q` / `faq-a`）も使えます（`tools` の `detail` にもカスタム class を設定した場合）。
+- 料金・機能は変わるため、ページ上部に「各ツールの情報の確認日時点のもの。最新は公式サイトで確認を」という注記を出しています。**確認日（`checkedAt`）は必ず入れることをおすすめします。**
+- API が未作成・ツールが 0 件の間は「準備中」と表示します（ページとメニューは出ます）。
+
+**「使い方の記事」について（検索評価との関係）**
+
+中身の薄いページが多いと、サイト全体の検索評価に悪影響が出ることがあります。そのため `article` は任意にしています。
+ツールごとに記事を用意する必要はなく、**詳しく解説する価値がある記事を書いたときだけ** 紐づけてください。一覧ページの詳細欄は 1 ページの中に収まるので、ツールが増えても薄いページは増えません。
+
+実装：`app/tools/page.tsx`（ページ）／`components/ToolItem.tsx`（1 行）／`lib/microcms.ts` の `fetchToolDirectory`／`types/tool.ts`
 
 ---
 

@@ -23,6 +23,11 @@
 **2026-10 時点：ユーザーが `feature/service-pages` を `main` に取り込み済み**（`main` の `99aa78a`「事業内容書き方変更」はユーザー自身のコミット）。
 以降の作業は `main` 上で行っている。下の「まだマージしていない」等の記述は取り込み前の経緯として残している。
 
+| `feature/tools-page` ← **今ここ（2026-10-15〜）** | 便利ツール一覧（/tools）。`main`（`1b79cc4`）から分岐。**未マージ** |
+
+- `main` の `81952ad`（強調枠）・`1b79cc4`（Q&A）は **origin に未 push**（2026-10-15 時点）。
+- 便利ツール一覧を外したいときは `git checkout main`。
+
 `layout/arights-comparison` の追加コミット：
 
 1. `c4bb2b7` 事業内容の一覧をカードなしのプレーンなリストに変更
@@ -40,6 +45,8 @@
   ファイル名は `finance` / `hr` / `sales` / `it` ＋ 拡張子（webp/png/jpg/jpeg）。
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - ~~ブランチのマージ判断~~ → ユーザーが `main` に取り込み済み。
+- **`feature/tools-page` のマージ判断**と、**microCMS に `tool-categories` / `tools` API を作成**（手順は README「便利ツール一覧」）。
+  作るまで /tools は「準備中」表示。ヘッダーメニューには「便利ツール」が出る。
 - **microCMS にカスタム class `highlight`（強調枠）、`faq-q` / `faq-a`（Q&A）を追加**：`blogs` の本文の詳細設定。手順は README「強調枠」「よくある質問（Q&A）」。
 - **「当社の特徴」の確認**：誤字の修正 2 か所（守備半→守備範囲、クラインとの→クライアントの）。
 - **microCMS に「事業内容」API（`services`）を作成し、4 事業分の本文を入力**。
@@ -114,6 +121,16 @@
 - `/services` の「支援開始までの流れ」の白い角丸カードを外し、罫線区切りに（角丸カードを避ける方針）
 - 本文の処理は `lib/richText.ts` の `prepareRichTextFragment`（サニタイズ＋埋め込み変換。目次 id は振らない）
 
+### 便利ツール一覧（`feature/tools-page` ブランチ）
+- `/tools`、ヘッダーメニュー「便利ツール」（`NAV_ITEMS` に追加 → フッター・sitemap にも自動で載る）
+- ユーザーの選択（2026-10-15）：詳細は **一覧の中で開閉＋使い方の記事へのリンク**／管理は **microCMS**／
+  分類は **4 領域＋その他を microCMS で作る**（`tool-categories` API）／入口は **ヘッダーメニュー**
+- ユーザーの懸念「記事が薄いと評価が下がるのでは」→ その通りなので `article` は任意にし、
+  価値のある記事があるときだけ紐づける運用を README に明記
+- 開閉は `<details>`（JS 不要）。公式サイトのリンクは `<summary>` の外（行の右端）に置く。外部リンクは自動計測
+- 料金・機能は変わるため「情報の確認日」（`checkedAt`）と注記を表示（事実でないことを書かない方針）
+- API 未作成・0 件は「準備中」表示。分類 API が無くてもツール側の参照から分類を組み立てる
+
 ### トップページ「当社の特徴」（`feature/service-pages` ブランチ）
 - ヒーローと「最近のブログ」の間に追加（ユーザー指定：「ブログの1個上」）。管理は **コード側**（`lib/strengths.ts` / `components/Strengths.tsx`）
 - 最初は 3 項目の一覧＋イラストで作ったが、ユーザーの指示で **「キャッチフレーズを中央上部 → 本文」** の形に変更（一覧・イラストの仕組みは削除）
@@ -166,6 +183,7 @@
 | 用途 | ファイル |
 |---|---|
 | サイト共通情報（屋号・住所・電話・代表者・SNS） | `lib/siteConfig.ts` |
+| 便利ツール一覧 | `app/tools/page.tsx` / `components/ToolItem.tsx` / `lib/microcms.ts` の `fetchToolDirectory` / `types/tool.ts` |
 | トップ「当社の特徴」 | `lib/strengths.ts`（文章） / `components/Strengths.tsx`（表示） |
 | 事業内容の 4 領域 | `lib/services.ts` |
 | 事業ごとの詳細ページ | `app/services/[id]/page.tsx` / `components/ServiceSectionBlock.tsx` / `lib/microcms.ts` の `fetchServicePage` / `types/service.ts` |
@@ -192,3 +210,4 @@
   canonical が自己参照・index 可、http／www なしは 308 転送を確認。パラメータ付き URL 等の正常な報告と判断し、コード修正なし
 - 2026-10-14：ブログ本文用のカスタム class `highlight`（強調枠）を追加（`main` 上）
 - 2026-10-15：ブログ本文用のカスタム class `faq-q` / `faq-a`（よくある質問）を追加（`main` 上）
+- 2026-10-15：便利ツール一覧（/tools）を追加（`feature/tools-page` ブランチ）。microCMS の API 作成とマージ判断はユーザー待ち

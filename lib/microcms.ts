@@ -9,7 +9,9 @@ import type {
   MicroCMSListResponse,
   Tag,
 } from '@/types/blog';
+import { SERVICES } from '@/lib/services';
 import type { ServicePageContent, ServiceSection } from '@/types/service';
+import type { Tool, ToolCategory, ToolDirectory } from '@/types/tool';
 
 /**
  * microCMS からブログ記事・カテゴリを取得する（Server Component から呼び出す前提）。
@@ -528,6 +530,174 @@ export async function fetchServicePage(id: string): Promise<ServicePageContent |
   return {
     lead: getString(json.lead)?.trim() || undefined,
     sections,
+  };
+}
+
+/** 便利ツール一覧の API のエンドポイント名（未設定なら README の手順どおりの API ID を使う） */
+const DEFAULT_TOOLS_ENDPOINT = 'tools';
+const DEFAULT_TOOL_CATEGORIES_ENDPOINT = 'tool-categories';
+
+/**
+ * 任意機能用に、リスト形式 API の contents を取得する。
+ * API 未作成（404）や通信障害のときは例外を投げずに null を返す（ページ側で「準備中」を表示する）。
+ */
+async function fetchOptionalContents(
+  logLabel: string,
+  endpoint: string,
+  searchParams: Record<string, string>,
+): Promise<unknown[] | null> {
+  const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN?.trim();
+  const apiKey = process.env.MICROCMS_API_KEY?.trim();
+  if (!serviceDomain || !apiKey) return null;
+
+  const url = new URL(
+    `https://${normalizeServiceDomain(serviceDomain)}.microcms.io/api/v1/${endpoint}`,
+  );
+  for (const [key, value] of Object.entries(searchParams)) {
+    url.searchParams.set(key, value);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { 'X-MICROCMS-API-KEY': apiKey },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+  } catch (error) {
+    console.error(`[${logLabel}] microCMS へのリクエストに失敗しました`, error);
+    return null;
+  }
+
+  // 404 は「API がまだ無い」状態。準備中の表示にするだけなのでログは出さない。
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    console.error(`[${logLabel}] microCMS から取得できませんでした（HTTP ${response.status}）`);
+    return null;
+  }
+
+  const json: unknown = await response.json();
+  return isRecord(json) && Array.isArray(json.contents) ? json.contents : null;
+}
+
+/** セレクトフィールド（配列）・テキストのどちらでも、最初の文字列を取り出す */
+function getFirstString(value: unknown): string | undefined {
+  const first = Array.isArray(value) ? value[0] : value;
+  return getString(first)?.trim() || undefined;
+}
+
+/** 公式サイトの URL。http / https 以外（javascript: など）は表示しない */
+function parseExternalUrl(value: unknown): string | null {
+  const raw = getString(value)?.trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 分類の「関連する事業内容」を事業の id に変換する。
+ * microCMS のセレクトの選択肢は、事業名（財務・資金 など）でも id（finance など）でもよい。
+ */
+function parseServiceId(value: unknown): ToolCategory['serviceId'] {
+  const raw = getFirstString(value);
+  if (!raw) return undefined;
+  return SERVICES.find((service) => service.id === raw || service.title === raw)?.id;
+}
+
+function parseToolCategory(value: unknown): ToolCategory | null {
+  if (!isRecord(value)) return null;
+  const id = getString(value.id);
+  const name = getString(value.name)?.trim();
+  if (!id || !name) return null;
+
+  return {
+    id,
+    name,
+    description: getString(value.description)?.trim() || undefined,
+    order: typeof value.order === 'number' ? value.order : undefined,
+    serviceId: parseServiceId(value.service),
+  };
+}
+
+function parseTool(value: unknown): Tool | null {
+  if (!isRecord(value)) return null;
+  const id = getString(value.id);
+  const name = getString(value.name)?.trim();
+  if (!id || !name) return null;
+
+  const article = isRecord(value.article) ? value.article : null;
+  const articleId = article ? getString(article.id) : undefined;
+  const articleTitle = article ? getString(article.title) : undefined;
+
+  return {
+    id,
+    name,
+    url: parseExternalUrl(value.url),
+    summary: getString(value.summary)?.trim() ?? '',
+    pricing: getFirstString(value.pricing),
+    detail: getString(value.detail) ?? '',
+    article: articleId && articleTitle ? { id: articleId, title: articleTitle } : null,
+    checkedAt: getString(value.checkedAt),
+    order: typeof value.order === 'number' ? value.order : undefined,
+    categoryId: isRecord(value.category) ? (getString(value.category.id) ?? null) : null,
+  };
+}
+
+/** order の昇順（未入力は最後）→ 名前順 */
+function compareByOrder(
+  a: { order?: number; name: string },
+  b: { order?: number; name: string },
+): number {
+  const orderA = a.order ?? Number.POSITIVE_INFINITY;
+  const orderB = b.order ?? Number.POSITIVE_INFINITY;
+  if (orderA !== orderB) return orderA - orderB;
+  return a.name.localeCompare(b.name, 'ja');
+}
+
+/**
+ * 便利ツール一覧（/tools）のデータを取得する。
+ *
+ * - ツール API が無い・取得できない場合は null（ページ側で「準備中」を表示）
+ * - 分類 API が無い場合でも、ツール側の参照（category）から分類を組み立てて表示する
+ * - 分類・ツールとも order（数値）の小さい順、同じなら名前順に並べる
+ * ※ 1 回の取得上限は 100 件（microCMS の limit の上限）。超える場合はページングが必要。
+ */
+export async function fetchToolDirectory(): Promise<ToolDirectory | null> {
+  const toolsEndpoint =
+    normalizeEndpoint(process.env.MICROCMS_TOOLS_ENDPOINT) ?? DEFAULT_TOOLS_ENDPOINT;
+  const categoriesEndpoint =
+    normalizeEndpoint(process.env.MICROCMS_TOOL_CATEGORIES_ENDPOINT) ??
+    DEFAULT_TOOL_CATEGORIES_ENDPOINT;
+
+  const [toolContents, categoryContents] = await Promise.all([
+    // category（分類）と article（ブログ記事）の参照を展開するため depth=1
+    fetchOptionalContents('tools', toolsEndpoint, { limit: '100', depth: '1' }),
+    fetchOptionalContents('tools', categoriesEndpoint, { limit: '100' }),
+  ]);
+  if (!toolContents) return null;
+
+  const tools = toolContents
+    .map(parseTool)
+    .filter((tool): tool is Tool => tool !== null)
+    .sort(compareByOrder);
+
+  // 分類 API が使えればそれを正とし、無ければツール側の参照から拾う
+  const categorySource =
+    categoryContents ??
+    toolContents.flatMap((content) =>
+      isRecord(content) && isRecord(content.category) ? [content.category] : [],
+    );
+  const categoryMap = new Map<string, ToolCategory>();
+  for (const category of categorySource.map(parseToolCategory)) {
+    if (category && !categoryMap.has(category.id)) categoryMap.set(category.id, category);
+  }
+
+  return {
+    categories: [...categoryMap.values()].sort(compareByOrder),
+    tools,
   };
 }
 

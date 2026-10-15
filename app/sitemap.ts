@@ -8,7 +8,7 @@ import { NAV_ITEMS, SITE_URL } from '@/lib/siteConfig';
 /**
  * /sitemap.xml を生成する（Next.js のファイル規約）。
  *
- * 固定ページは NAV_ITEMS（= サイト内の全 5 ページ）から、事業ごとの詳細ページは lib/services.ts から、
+ * 固定ページは NAV_ITEMS（= ヘッダーメニューの全ページ）から、事業ごとの詳細ページは lib/services.ts から、
  * 記事 URL は microCMS から生成する。
  * 末尾スラッシュは next.config.ts の trailingSlash: false に合わせて付けない。
  */
