@@ -535,7 +535,9 @@ export async function fetchServicePage(id: string): Promise<ServicePageContent |
 
 /** 便利ツール一覧の API のエンドポイント名（未設定なら README の手順どおりの API ID を使う） */
 const DEFAULT_TOOLS_ENDPOINT = 'tools';
-const DEFAULT_TOOL_CATEGORIES_ENDPOINT = 'tool-categories';
+
+/** 分類が未選択のツールをまとめる分類名（並びは常に最後） */
+const OTHER_TOOL_CATEGORY = 'その他';
 
 /**
  * 任意機能用に、リスト形式 API の contents を取得する。
@@ -597,31 +599,6 @@ function parseExternalUrl(value: unknown): string | null {
   }
 }
 
-/**
- * 分類の「関連する事業内容」を事業の id に変換する。
- * microCMS のセレクトの選択肢は、事業名（財務・資金 など）でも id（finance など）でもよい。
- */
-function parseServiceId(value: unknown): ToolCategory['serviceId'] {
-  const raw = getFirstString(value);
-  if (!raw) return undefined;
-  return SERVICES.find((service) => service.id === raw || service.title === raw)?.id;
-}
-
-function parseToolCategory(value: unknown): ToolCategory | null {
-  if (!isRecord(value)) return null;
-  const id = getString(value.id);
-  const name = getString(value.name)?.trim();
-  if (!id || !name) return null;
-
-  return {
-    id,
-    name,
-    description: getString(value.description)?.trim() || undefined,
-    order: typeof value.order === 'number' ? value.order : undefined,
-    serviceId: parseServiceId(value.service),
-  };
-}
-
 function parseTool(value: unknown): Tool | null {
   if (!isRecord(value)) return null;
   const id = getString(value.id);
@@ -642,7 +619,8 @@ function parseTool(value: unknown): Tool | null {
     article: articleId && articleTitle ? { id: articleId, title: articleTitle } : null,
     checkedAt: getString(value.checkedAt),
     order: typeof value.order === 'number' ? value.order : undefined,
-    categoryId: isRecord(value.category) ? (getString(value.category.id) ?? null) : null,
+    // セレクトフィールド（配列）でもテキストでも受け取れる
+    category: getFirstString(value.category) ?? null,
   };
 }
 
@@ -658,46 +636,65 @@ function compareByOrder(
 }
 
 /**
+ * 分類の並び順を決める。
+ * 1. 事業内容の 4 領域（lib/services.ts の順：財務・資金 → 組織・人事 → 営業・売上 → IT・システム）
+ * 2. それ以外の分類（microCMS のセレクトに選択肢を足した場合）は名前順
+ * 3. 「その他」は常に最後
+ */
+function compareToolCategories(a: string, b: string): number {
+  const rank = (name: string) => {
+    if (name === OTHER_TOOL_CATEGORY) return SERVICES.length + 1;
+    const serviceIndex = SERVICES.findIndex((service) => service.title === name);
+    return serviceIndex === -1 ? SERVICES.length : serviceIndex;
+  };
+  return rank(a) - rank(b) || a.localeCompare(b, 'ja');
+}
+
+/**
+ * 分類名から一覧用の分類情報を作る。
+ * 事業内容の名前と一致すれば、ページ内リンクの id に事業の id を使い、詳細ページへの案内も付ける。
+ * それ以外は日本語をそのまま id にできないため、並び順の番号で id を振る。
+ */
+function toToolCategory(name: string, index: number): ToolCategory {
+  const service = SERVICES.find((item) => item.title === name);
+  if (service) return { id: service.id, name, serviceId: service.id };
+  if (name === OTHER_TOOL_CATEGORY) return { id: 'other', name };
+  return { id: `category-${index + 1}`, name };
+}
+
+/**
  * 便利ツール一覧（/tools）のデータを取得する。
  *
- * - ツール API が無い・取得できない場合は null（ページ側で「準備中」を表示）
- * - 分類 API が無い場合でも、ツール側の参照（category）から分類を組み立てて表示する
- * - 分類・ツールとも order（数値）の小さい順、同じなら名前順に並べる
+ * - API が無い・取得できない場合は null（ページ側で「準備中」を表示）
+ * - 分類は各ツールの category（セレクト）の値でまとめる。未選択は「その他」
+ * - 分類の順は compareToolCategories、分類内のツールは order（数値）の小さい順、同じなら名前順
  * ※ 1 回の取得上限は 100 件（microCMS の limit の上限）。超える場合はページングが必要。
  */
 export async function fetchToolDirectory(): Promise<ToolDirectory | null> {
-  const toolsEndpoint =
+  const endpoint =
     normalizeEndpoint(process.env.MICROCMS_TOOLS_ENDPOINT) ?? DEFAULT_TOOLS_ENDPOINT;
-  const categoriesEndpoint =
-    normalizeEndpoint(process.env.MICROCMS_TOOL_CATEGORIES_ENDPOINT) ??
-    DEFAULT_TOOL_CATEGORIES_ENDPOINT;
+  // article（ブログ記事）の参照を展開するため depth=1
+  const contents = await fetchOptionalContents('tools', endpoint, { limit: '100', depth: '1' });
+  if (!contents) return null;
 
-  const [toolContents, categoryContents] = await Promise.all([
-    // category（分類）と article（ブログ記事）の参照を展開するため depth=1
-    fetchOptionalContents('tools', toolsEndpoint, { limit: '100', depth: '1' }),
-    fetchOptionalContents('tools', categoriesEndpoint, { limit: '100' }),
-  ]);
-  if (!toolContents) return null;
-
-  const tools = toolContents
+  const tools = contents
     .map(parseTool)
     .filter((tool): tool is Tool => tool !== null)
     .sort(compareByOrder);
 
-  // 分類 API が使えればそれを正とし、無ければツール側の参照から拾う
-  const categorySource =
-    categoryContents ??
-    toolContents.flatMap((content) =>
-      isRecord(content) && isRecord(content.category) ? [content.category] : [],
-    );
-  const categoryMap = new Map<string, ToolCategory>();
-  for (const category of categorySource.map(parseToolCategory)) {
-    if (category && !categoryMap.has(category.id)) categoryMap.set(category.id, category);
+  const toolsByCategory = new Map<string, Tool[]>();
+  for (const tool of tools) {
+    const name = tool.category ?? OTHER_TOOL_CATEGORY;
+    toolsByCategory.set(name, [...(toolsByCategory.get(name) ?? []), tool]);
   }
 
   return {
-    categories: [...categoryMap.values()].sort(compareByOrder),
-    tools,
+    groups: [...toolsByCategory.keys()]
+      .sort(compareToolCategories)
+      .map((name, index) => ({
+        category: toToolCategory(name, index),
+        tools: toolsByCategory.get(name) ?? [],
+      })),
   };
 }
 

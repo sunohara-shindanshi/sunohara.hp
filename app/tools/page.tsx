@@ -8,7 +8,7 @@ import { buildPageMetadata } from '@/lib/metadata';
 import { fetchToolDirectory } from '@/lib/microcms';
 import { prepareRichTextFragment } from '@/lib/richText';
 import { buildServiceHref, findService } from '@/lib/services';
-import type { Tool, ToolCategory } from '@/types/tool';
+import type { Tool, ToolCategory, ToolDirectory } from '@/types/tool';
 
 export const metadata = buildPageMetadata({
   title: '便利ツール一覧',
@@ -17,46 +17,34 @@ export const metadata = buildPageMetadata({
   path: '/tools',
 });
 
-/** ツール側に分類が入っていない、または分類が見つからないツールのまとめ先 */
-const UNCATEGORIZED_ID = 'uncategorized';
-
 type ToolGroup = {
   category: ToolCategory;
   tools: { tool: Tool; detailHtml: string }[];
 };
 
-/** 分類ごとにツールをまとめる（ツールが 1 件も無い分類は表示しない） */
-async function buildGroups(categories: ToolCategory[], tools: Tool[]): Promise<ToolGroup[]> {
-  const prepared = await Promise.all(
-    tools.map(async (tool) => ({
-      tool,
-      detailHtml: tool.detail ? await prepareRichTextFragment(tool.detail) : '',
+/** 各ツールの詳細（リッチエディタ）をサニタイズして、表示用のグループにする */
+async function prepareGroups(directory: ToolDirectory): Promise<ToolGroup[]> {
+  return Promise.all(
+    directory.groups.map(async ({ category, tools }) => ({
+      category,
+      tools: await Promise.all(
+        tools.map(async (tool) => ({
+          tool,
+          detailHtml: tool.detail ? await prepareRichTextFragment(tool.detail) : '',
+        })),
+      ),
     })),
   );
-
-  const knownIds = new Set(categories.map((category) => category.id));
-  const groups: ToolGroup[] = categories.map((category) => ({
-    category,
-    tools: prepared.filter(({ tool }) => tool.categoryId === category.id),
-  }));
-
-  const uncategorized = prepared.filter(
-    ({ tool }) => !tool.categoryId || !knownIds.has(tool.categoryId),
-  );
-  if (uncategorized.length > 0) {
-    groups.push({ category: { id: UNCATEGORIZED_ID, name: 'そのほかのツール' }, tools: uncategorized });
-  }
-
-  return groups.filter((group) => group.tools.length > 0);
 }
 
 /**
- * 便利ツール一覧（/tools）。中身はすべて microCMS（tools / tool-categories API）から取得する。
+ * 便利ツール一覧（/tools）。中身はすべて microCMS の tools API から取得する
+ * （分類は tools の category セレクト。分類の並び順は lib/microcms.ts の compareToolCategories）。
  * API が未作成・取得失敗・ツール 0 件のときは「準備中」と表示する（ページ自体は出す）。
  */
 export default async function ToolsPage() {
   const directory = await fetchToolDirectory();
-  const groups = directory ? await buildGroups(directory.categories, directory.tools) : [];
+  const groups = directory ? await prepareGroups(directory) : [];
 
   return (
     <>
@@ -114,11 +102,6 @@ export default async function ToolsPage() {
                       >
                         {category.name}
                       </h2>
-                      {category.description ? (
-                        <p className="mt-2 text-sm leading-relaxed text-brand-ink">
-                          {category.description}
-                        </p>
-                      ) : null}
 
                       <ul className="mt-5 border-b border-brand-line">
                         {tools.map(({ tool, detailHtml }) => (

@@ -1,20 +1,18 @@
 /**
- * 「便利ツール一覧」（/tools）のデータ。microCMS の 2 API から取得する。
- * - tool-categories : 分類（財務・資金／組織・人事／営業・売上／IT・システム／その他 など）
- * - tools           : ツール本体（分類は tool-categories への単一参照）
+ * 「便利ツール一覧」（/tools）のデータ。microCMS の tools API（1 つだけ）から取得する。
+ * 分類は tools の category（セレクトフィールド）で選ぶ。
+ * （microCMS の無料プランは API の数に上限があるため、分類専用の API は作らない方針）
  * フィールドの作り方は README「便利ツール一覧（microCMS）」を参照。
  */
 
 import type { Service } from '@/lib/services';
 
+/** 一覧での分類（ツールの category の値から組み立てる） */
 export type ToolCategory = {
+  /** ページ内リンク用の識別子（英数字） */
   id: string;
   name: string;
-  /** 分類の説明（任意） */
-  description?: string;
-  /** 表示順（小さいほど上。未入力は最後） */
-  order?: number;
-  /** 関連する事業内容（任意）。入っていれば「この領域のご相談」として詳細ページへリンクする */
+  /** 分類名が事業内容の名前と一致すれば、その事業の id（詳細ページへの案内に使う） */
   serviceId?: Service['id'];
 };
 
@@ -35,10 +33,11 @@ export type Tool = {
   checkedAt?: string;
   /** 分類内の表示順（小さいほど上。未入力は名前順で後ろ） */
   order?: number;
-  categoryId: string | null;
+  /** 分類名（セレクトフィールドの値）。未選択は null（「その他」に入れる） */
+  category: string | null;
 };
 
 export type ToolDirectory = {
-  categories: ToolCategory[];
-  tools: Tool[];
+  /** 表示順に並んだ分類とツール（ツールが 1 件も無い分類は含まない） */
+  groups: { category: ToolCategory; tools: Tool[] }[];
 };
