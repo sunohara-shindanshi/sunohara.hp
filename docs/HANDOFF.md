@@ -40,7 +40,7 @@
   ファイル名は `finance` / `hr` / `sales` / `it` ＋ 拡張子（webp/png/jpg/jpeg）。
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - ~~ブランチのマージ判断~~ → ユーザーが `main` に取り込み済み。
-- **microCMS にカスタム class `highlight`（強調枠）を追加**：`blogs` の本文の詳細設定。手順は README「強調枠」。
+- **microCMS にカスタム class `highlight`（強調枠）、`faq-q` / `faq-a`（Q&A）を追加**：`blogs` の本文の詳細設定。手順は README「強調枠」「よくある質問（Q&A）」。
 - **「当社の特徴」の確認**：誤字の修正 2 か所（守備半→守備範囲、クラインとの→クライアントの）。
 - **microCMS に「事業内容」API（`services`）を作成し、4 事業分の本文を入力**。
   作り方は README「7. ブログ（microCMS）」→「事業内容の詳細ページ」。
@@ -71,7 +71,9 @@
 - 本文の見出しはサニタイズで1段下げている（microCMS の 見出し1→`h2`、見出し2→`h3`、見出し3→`h4`）
 - 見出しデザイン：見出し1＝左の縦線、見出し2＝文字幅の下線、見出し3＝先頭ハイフン（`app/globals.css`）
 - 本文の枠（microCMS のカスタム class）：`column`＝コラム（淡い青・角丸・ラベル付き）、
-  `highlight`＝強調枠（計算式・目立たせたい一文。太い青線の四角＋淡い黄色、太字・中央揃え）。どちらも `app/globals.css`
+  `highlight`＝強調枠（計算式・目立たせたい一文。太い青線の四角＋淡い黄色、太字・中央揃え）、
+  `faq-q` / `faq-a`＝よくある質問（Q は青、A は黄色の四角バッジ。組ごとに上罫線。続く faq-a はバッジなし）。すべて `app/globals.css`。
+  FAQPage の構造化データは出していない（Google が一般サイトの FAQ リッチリザルトを終了しているため）
 - 画像は WebP 配信（`next/image` と microCMS 画像の `fm=webp`）
 
 ### 計測（GA4 + GTM）
@@ -189,3 +191,4 @@
 - 2026-10-07：Search Console「代替ページ（適切な canonical タグあり）」の相談。本番のサイトマップ 23 URL すべてで
   canonical が自己参照・index 可、http／www なしは 308 転送を確認。パラメータ付き URL 等の正常な報告と判断し、コード修正なし
 - 2026-10-14：ブログ本文用のカスタム class `highlight`（強調枠）を追加（`main` 上）
+- 2026-10-15：ブログ本文用のカスタム class `faq-q` / `faq-a`（よくある質問）を追加（`main` 上）

@@ -141,6 +141,86 @@
   }
 
   /*
+   * よくある質問（Q&A）
+   * microCMS のリッチエディタで、質問の段落にカスタムclass「faq-q」、
+   * 回答の段落に「faq-a」を付けると、先頭に Q / A のバッジを付けて表示する。
+   * Q&A の組ごとに上へ細い罫線を引いて区切る（角丸の囲みは使わない方針）。
+   *
+   * microCMS の出力は .column と同じく <p class="…"> か <p><span class="…">…</span></p> の
+   * 2 通りがあるため、
+   *  - 段落の余白・罫線は「段落（p）」側
+   *  - バッジと字下げは「クラスの付いた要素（p または span）」側
+   * に分けて指定している。
+   */
+
+  /* 段落側：質問。組の区切りとして上に罫線を引く */
+  .prose p.faq-q,
+  .prose p:has(> span.faq-q:only-child) {
+    margin-top: 2em;
+    margin-bottom: 0;
+    border-top: 1px solid theme('colors.brand.line');
+    padding-top: 1.25em;
+  }
+
+  /* 段落側：回答。直前の質問（または回答）に寄せる */
+  .prose p.faq-a,
+  .prose p:has(> span.faq-a:only-child) {
+    margin-top: 0.75em;
+  }
+
+  /* 要素側：バッジを置くための字下げ */
+  .prose :where(p, span).faq-q,
+  .prose :where(p, span).faq-a {
+    display: block;
+    position: relative;
+    padding-left: 2.4em;
+  }
+
+  .prose :where(p, span).faq-q {
+    font-weight: 700;
+    color: theme('colors.brand.navy');
+  }
+
+  /* Q / A のバッジ（四角。角は丸めない） */
+  .prose :where(p, span).faq-q::before,
+  .prose :where(p, span).faq-a::before {
+    position: absolute;
+    left: 0;
+    /* 1 行目の文字の上下中央に合わせる（ブラウザで実測して調整した値） */
+    top: 0.32em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6em;
+    height: 1.6em;
+    font-size: 0.9em;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .prose :where(p, span).faq-q::before {
+    content: 'Q';
+    background-color: theme('colors.brand.accent');
+    color: #fff;
+  }
+
+  .prose :where(p, span).faq-a::before {
+    content: 'A';
+    /* CTA ボタンと同じ黄色。文字は濃紺（コントラスト比 5.1:1） */
+    background-color: theme('colors.brand.sun');
+    color: theme('colors.brand.navy');
+  }
+
+  /*
+   * 回答が複数の段落にわたる場合（faq-a の段落が続く場合）、
+   * 2 段落目以降はバッジを出さず、字下げだけそろえる。
+   */
+  .prose :is(p.faq-a, p:has(> span.faq-a:only-child)) + p.faq-a::before,
+  .prose :is(p.faq-a, p:has(> span.faq-a:only-child)) + p:has(> span.faq-a:only-child) > span.faq-a::before {
+    content: none;
+  }
+
+  /*
    * 埋め込みカード（記事本文の「埋め込み」リンクを、記事情報付きのカードとして表示する）
    *
    * microCMS の「埋め込み」は本来 Iframely（外部サービス）の script が組み立てるが、
