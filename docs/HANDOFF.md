@@ -23,10 +23,10 @@
 **2026-10 時点：ユーザーが `feature/service-pages` を `main` に取り込み済み**（`main` の `99aa78a`「事業内容書き方変更」はユーザー自身のコミット）。
 以降の作業は `main` 上で行っている。下の「まだマージしていない」等の記述は取り込み前の経緯として残している。
 
-| `feature/tools-page` ← **今ここ（2026-10-15〜）** | 便利ツール一覧（/tools）。`main`（`1b79cc4`）から分岐。**未マージ** |
+| `feature/tools-page` | 便利ツール一覧（/tools）＋GA4 計測。**2026-10-23 に `main` へマージ（fast-forward）し push 済み** |
 
-- `main` の `81952ad`（強調枠）・`1b79cc4`（Q&A）は **origin に未 push**（2026-10-15 時点）。
-- 便利ツール一覧を外したいときは `git checkout main`。
+- 現在の作業ブランチは **`main`**（origin/main と同期）。
+- 便利ツール一覧を取り消したい場合は、マージ前の `main` の先頭 `1b79cc4` が目印（`git revert` で戻す。履歴の書き換えはしない）。
 
 `layout/arights-comparison` の追加コミット：
 
@@ -45,7 +45,8 @@
   ファイル名は `finance` / `hr` / `sales` / `it` ＋ 拡張子（webp/png/jpg/jpeg）。
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - ~~ブランチのマージ判断~~ → ユーザーが `main` に取り込み済み。
-- **`feature/tools-page` のマージ判断**と、**microCMS に `tools` API を作成**（手順は README「便利ツール一覧」）。
+- ~~`feature/tools-page` のマージ判断~~ → 2026-10-23 にマージ・push 済み。
+- **microCMS に `tools` API を作成**（手順は README「便利ツール一覧」）。作るまで本番の /tools は「準備中」表示。
 - **GTM / GA4 のまとめての修正**：手順は `docs/analytics.md`「6-2」。ユーザーが「11 章（保守・運用）とセットで直す」と決定（2026-10-23）。
   ページビューをコード側の `page_view` に一本化する（Google タグに send_page_view=false、汎用タグ＋トリガー新規、
   GA4 拡張計測の ページビュー/スクロール/離脱クリック/ファイルDL/フォームの操作 をオフ、カスタムディメンション登録）。
@@ -246,3 +247,4 @@
   プレビュー＋DebugView で、記事ページの page_view に article_id / word_count が付いて GA4 に届くことを確認。
   ※ Tag Assistant の一覧には page_view が独立した行で出ず「履歴の変更」の行にまとまって見えるが、GA4 には正しく届いている。
   残り：GTM の「公開」、公開後の確認、便利ツールの公開（microCMS の tools API 作成＋feature/tools-page のマージ・push）
+- 2026-10-23：`feature/tools-page` を `main` にマージ（fast-forward）し、origin へ push。lint・型チェック・ビルド確認済み
