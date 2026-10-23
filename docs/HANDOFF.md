@@ -241,3 +241,8 @@
   実際の設定と追加手順を docs/analytics.md 6-2 章に記載
 - 2026-10-23：11 章（send_page_view=false・拡張計測オフ）とも食い違っていたため、6-2 章を「まとめて修正する手順」に書き直し
   （ページビューをコードに一本化。拡張計測の「フォームの操作」もオフ対象に追加）
+- 2026-10-23：ユーザーが GTM（変数・Google タグの send_page_view=false・汎用トリガー・汎用タグ）と
+  GA4（拡張計測機能を **すべてオフ**、カスタムディメンション tool_name / tool_category 登録）を設定。
+  プレビュー＋DebugView で、記事ページの page_view に article_id / word_count が付いて GA4 に届くことを確認。
+  ※ Tag Assistant の一覧には page_view が独立した行で出ず「履歴の変更」の行にまとまって見えるが、GA4 には正しく届いている。
+  残り：GTM の「公開」、公開後の確認、便利ツールの公開（microCMS の tools API 作成＋feature/tools-page のマージ・push）
