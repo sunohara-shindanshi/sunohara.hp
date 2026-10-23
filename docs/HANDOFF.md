@@ -46,8 +46,9 @@
   置けば自動で表示される（コード変更不要）。手順は `public/services/README.md`。
 - ~~ブランチのマージ判断~~ → ユーザーが `main` に取り込み済み。
 - **`feature/tools-page` のマージ判断**と、**microCMS に `tools` API を作成**（手順は README「便利ツール一覧」）。
-- **GTM / GA4 の設定追加（便利ツールの計測）**：GTM に変数 `DLV - tool_name` / `DLV - tool_category` を作り、
-  タグ「GA4 - イベント（汎用）」のパラメータに 2 行追加 → 公開。GA4 にカスタムディメンション「ツール名」「ツール分類」を登録。
+- **GTM / GA4 の設定追加**：手順は `docs/analytics.md`「6-2. 現在の GTM の実際の設定と、追加する手順」。
+  変数 2 つ（tool_name / tool_category）＋トリガー 1 つ＋タグ「GA4 - イベント（汎用）」を **新規作成**。
+  GA4 にカスタムディメンション「ツール名」「ツール分類」を登録。
   作るまで /tools は「準備中」表示。ヘッダーメニューには「便利ツール」が出る。
 - **microCMS にカスタム class `highlight`（強調枠）、`faq-q` / `faq-a`（Q&A）を追加**：`blogs` の本文の詳細設定。手順は README「強調枠」「よくある質問（Q&A）」。
 - **「当社の特徴」の確認**：誤字の修正 2 か所（守備半→守備範囲、クラインとの→クライアントの）。
@@ -177,6 +178,12 @@
 
 ## 5. ハマりどころ（作業時の注意）
 
+- **GTM は docs/analytics.md 7〜9 章の推奨構成になっていない**（2026-10-23、公開中のコンテナを確認）。
+  実際のタグは「Google タグ（send_page_view 未設定）」「スクロール（scroll_.*）」「フォーム送信（form_submit）」の 3 つだけで、
+  汎用のイベントタグは無い。cta_click などの多くのイベントは GA4 に届いていなかった。
+  **GTM の手順を案内するときは、まず公開中の設定を確認する**（`https://www.googletagmanager.com/gtm.js?id=GTM-56BC4P4W`
+  の `"resource"` 部分にタグ・変数・トリガーが載っている）。存在しないタグを前提に案内してしまったことがある
+
 - **フォルダ名を変えた後は `.next` キャッシュを削除**する（`rm -rf .next tsconfig.tsbuildinfo`）。
   残っていると Turbopack が `Next.js package not found` で落ち、全記事が 404 になる
 - **ポート 3000 に古い `next dev` が残る**ことがある。`Another next dev server is already running` と出たら
@@ -229,3 +236,5 @@
 - 2026-10-15：microCMS 無料プランの API 数の上限のため、分類 API をやめて `tools` の `category`（セレクト）に変更
 - 2026-10-15：`pricing`（料金区分）を削除（すべて無料ツールのため）。README に microCMS の詳しい作成手順を記載
 - 2026-10-15：便利ツール一覧に GA4 計測を追加（tool_detail_open / tool_link_click / tool_article_click ほか）。GTM・GA4 の設定追加はユーザー待ち
+- 2026-10-23：ユーザーの指摘で、GTM に汎用イベントタグが存在しないことが判明。公開中のコンテナを確認し、
+  実際の設定と追加手順を docs/analytics.md 6-2 章に記載

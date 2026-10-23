@@ -429,7 +429,111 @@
 
 ---
 
-## 7. GTM で作成するタグ
+## 6-2. 現在の GTM の実際の設定と、追加する手順（2026-10-23 確認）
+
+> 下の 7〜9 章は「計測基盤を作ったときに推奨した GTM の構成」です。
+> **実際の GTM はその構成になっていません**（公開中のコンテナ `GTM-56BC4P4W` の中身を確認した結果）。
+> GTM を触るときは、まずこの章を読んでください。
+
+### 現在公開されている設定
+
+| タグ | 種類 | トリガー | 送っているもの |
+| --- | --- | --- | --- |
+| Google タグ | Google タグ（タグ ID `{{DLV - ga_measurement_id}}`） | Initialization - All Pages | **`send_page_view` は未設定**＝GA4 が自動でページビューを送っている |
+| スクロール | GA4 イベント（イベント名 `{{Event}}`） | イベント名が `scroll_.*` に一致 | `scroll_25`〜`scroll_100`（`percent_scrolled` 付き） |
+| フォーム送信 | GA4 イベント（イベント名 `form_submit`） | イベント名 `form_submit` | `form_submit`（`form_id` / `form_name` / `page_location` 付き） |
+
+- データレイヤーの変数は、7 章のパラメータ表のほぼすべてが作成済み（`DLV - ...`）。
+  **無いのは `page_path` / `tool_name` / `tool_category` の 3 つ**。
+- **GA4 に届いていないイベント**：`cta_click` / `related_article_click` / `external_link_click` / `pdf_download` /
+  `article_select` / `category_select` / `tag_select` / `form_view` / `form_start` / `toc_click` /
+  `tool_detail_open` / `tool_link_click` / `tool_article_click`。
+  コードは dataLayer に積んでいるが、拾うタグが無いため GA4 には送られていない。
+- コード側の `page_view` も GA4 には送られていない（ページビューは Google タグの自動送信で数えられている）。
+  そのため、ページビューには記事パラメータ（`article_id` など）が付いていない。
+
+### 追加する手順（既存の 3 タグは残し、二重計測を起こさない形）
+
+**1. 変数を 2 つ作る**（変数 → ユーザー定義変数 → 新規 → データレイヤーの変数、バージョン 2、既定値なし）
+
+| 変数名 | データレイヤーの変数名 |
+| --- | --- |
+| `DLV - tool_name` | `tool_name` |
+| `DLV - tool_category` | `tool_category` |
+
+**2. トリガーを 1 つ作る**（トリガー → 新規 → カスタムイベント）
+
+- 名前：`カスタムイベント（既存タグ以外）`
+- イベント名：`.*`、**「正規表現一致を使用」にチェック**
+- このトリガーの発生場所：**一部のカスタムイベント**
+- 条件：`Event` ／ **正規表現に一致しない** ／ `^(gtm\..*|page_view|scroll_.*|form_submit)$`
+
+`page_view` を除くのは、Google タグがすでにページビューを自動送信しているため（含めると二重に数える）。
+`scroll_*` と `form_submit` を除くのは、既存のタグで送っているため。
+この形なら、今後イベントを増やしても **トリガーの修正は不要** です。
+
+**3. タグを 1 つ作る**（タグ → 新規 → Google アナリティクス：GA4 イベント）
+
+- 名前：`GA4 - イベント（汎用）`
+- 測定 ID：`G-VY959R184H`（既存の 2 タグと同じ）
+- イベント名：`{{Event}}`
+- イベントパラメータ（「パラメータを追加」で 1 行ずつ。左がパラメータ名、右が変数）：
+
+```
+page_title        {{DLV - page_title}}
+page_referrer     {{DLV - page_referrer}}
+article_id        {{DLV - article_id}}
+article_slug      {{DLV - article_slug}}
+article_title     {{DLV - article_title}}
+article_category  {{DLV - article_category}}
+article_tags      {{DLV - article_tags}}
+publish_date      {{DLV - publish_date}}
+publish_year      {{DLV - publish_year}}
+updated_date      {{DLV - updated_date}}
+is_updated        {{DLV - is_updated}}
+word_count        {{DLV - word_count}}
+reading_time      {{DLV - reading_time}}
+author            {{DLV - author}}
+toc_text          {{DLV - toc_text}}
+toc_anchor        {{DLV - toc_anchor}}
+toc_level         {{DLV - toc_level}}
+cta_name          {{DLV - cta_name}}
+cta_location      {{DLV - cta_location}}
+link_url          {{DLV - link_url}}
+link_text         {{DLV - link_text}}
+from_article      {{DLV - from_article}}
+to_article        {{DLV - to_article}}
+category          {{DLV - category}}
+file_name         {{DLV - file_name}}
+file_url          {{DLV - file_url}}
+list_name         {{DLV - list_name}}
+category_name     {{DLV - category_name}}
+category_slug     {{DLV - category_slug}}
+tag_name          {{DLV - tag_name}}
+tag_slug          {{DLV - tag_slug}}
+form_name         {{DLV - form_name}}
+form_id           {{DLV - form_id}}
+tool_name         {{DLV - tool_name}}
+tool_category     {{DLV - tool_category}}
+```
+
+- `page_location` / `page_path` は入れなくてよい（GA4 がページの URL を自動で付けるため）。
+- 配信トリガー：手順 2 の `カスタムイベント（既存タグ以外）`
+
+**4. プレビューで確認してから公開**（10 章 B の手順）
+
+- サイトでボタンや記事カードをクリックし、`cta_click` や `article_select` で `GA4 - イベント（汎用）` が **Fired** になること
+- ページを開いただけの `page_view` では、`GA4 - イベント（汎用）` が **発火しない** こと（二重計測の防止）
+
+### 今後の検討（急がない）
+
+ページビューにも記事パラメータ（`article_id` 等）を付けたい場合は、Google タグに `send_page_view = false` を設定し、
+手順 2 の除外から `page_view` を外して、コード側の `page_view` を送る形（7〜9 章の構成）に切り替えます。
+切り替えの際は GA4 の拡張計測機能の「ページビュー数」もオフにしないと二重計測になるため、作業するときは一緒に確認すること。
+
+---
+
+## 7. GTM で作成するタグ（計測基盤を作ったときの推奨構成。実際の設定は 6-2 章）
 
 | # | タグ名 | 種類 | 設定 | トリガー |
 | --- | --- | --- | --- | --- |
