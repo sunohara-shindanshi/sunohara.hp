@@ -87,11 +87,17 @@
     color: theme('colors.brand.ink');
   }
 
-  /* 「コラム」ラベルを枠の左上に添える */
+  /*
+   * 「コラム」ラベルを枠の一番上に、1 行として置く。
+   * 以前は inline-block で、ラベルのすぐ右から本文が始まって読みにくかったため、
+   * block にして本文を次の行から始めるようにした（width: fit-content でラベル幅は文字ぶんだけ）。
+   */
   .prose :where(p, span).column::before {
     content: 'コラム';
-    display: inline-block;
-    margin-bottom: 0.5rem;
+    display: block;
+    width: fit-content;
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
     border-radius: 9999px;
     background-color: theme('colors.brand.accent');
     padding: 0.15rem 0.7rem;

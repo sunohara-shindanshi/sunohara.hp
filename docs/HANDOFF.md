@@ -248,3 +248,7 @@
   ※ Tag Assistant の一覧には page_view が独立した行で出ず「履歴の変更」の行にまとまって見えるが、GA4 には正しく届いている。
   残り：GTM の「公開」、公開後の確認、便利ツールの公開（microCMS の tools API 作成＋feature/tools-page のマージ・push）
 - 2026-10-23：`feature/tools-page` を `main` にマージ（fast-forward）し、origin へ push。lint・型チェック・ビルド確認済み
+- 2026-10-23：本番の /tools で 15 件表示を確認。全ツールで `summary`（ひとこと説明）と `order` が空。
+  事業名が「営業・マーケティング」に変わったが、サイト内の文章 6 か所（トップ・事業内容・お問い合わせ・ブログ一覧の説明文、siteConfig.description）は
+  「営業・売上」のまま → 書き換えはユーザーの判断待ち
+- 2026-10-26：コラム（`column`）の「コラム」ラベルを inline-block → block にし、ラベルを一番上の 1 行に、本文を次の行からにした（`app/globals.css`）
