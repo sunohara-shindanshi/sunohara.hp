@@ -10,7 +10,7 @@
 | -------- | ---------- | -------------------------------------------- |
 | `finance`| 財務・資金 | `finance.png` / `finance.jpg` / `finance.webp` |
 | `hr`     | 組織・人事 | `hr.png` / `hr.jpg` / `hr.webp`                |
-| `sales`  | 営業・売上 | `sales.png` / `sales.jpg` / `sales.webp`       |
+| `sales`  | 営業・マーケティング | `sales.png` / `sales.jpg` / `sales.webp`       |
 | `it`     | IT・システム | `it.png` / `it.jpg` / `it.webp`              |
 
 - 対応拡張子は `webp` / `png` / `jpg` / `jpeg` です。どれか1つを置けば反映されます。

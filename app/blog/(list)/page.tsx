@@ -18,7 +18,7 @@ type BlogPageProps = {
 };
 
 const BASE_DESCRIPTION =
-  '財務・資金、組織・人事、営業・売上、IT・システム。経営の現場で気づいたことをまとめています。中小企業の経営に役立つ実務的な情報を発信します。';
+  '財務・資金、組織・人事、営業・マーケティング、IT・システム。経営の現場で気づいたことをまとめています。中小企業の経営に役立つ実務的な情報を発信します。';
 
 export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
   const { currentPage: pageNumber, activeCategory, isInvalid } = await resolveBlogQuery(

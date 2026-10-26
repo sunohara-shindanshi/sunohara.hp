@@ -8,7 +8,7 @@ import { SERVICES } from '@/lib/services';
 export const metadata = buildPageMetadata({
   title: '事業内容',
   description:
-    '財務・資金（お金の悩み）、組織・人事（人の悩み）、営業・売上（売上の悩み）、IT・システム（仕組みの悩み）の4領域から、中小企業の経営課題を横断的に支援します。',
+    '財務・資金（お金の悩み）、組織・人事（人の悩み）、営業・マーケティング（売上の悩み）、IT・システム（仕組みの悩み）の4領域から、中小企業の経営課題を横断的に支援します。',
   path: '/services',
 });
 

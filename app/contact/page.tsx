@@ -10,7 +10,7 @@ import { siteConfig, telHref } from '@/lib/siteConfig';
 
 export const metadata = buildPageMetadata({
   title: 'お問い合わせ',
-  description: `${siteConfig.name}へのご相談はこちらから。財務・資金、組織・人事、営業・売上、IT・システムに関するお問い合わせを、フォームから承ります。ご相談内容が固まっていない段階でも構いません。`,
+  description: `${siteConfig.name}へのご相談はこちらから。財務・資金、組織・人事、営業・マーケティング、IT・システムに関するお問い合わせを、フォームから承ります。ご相談内容が固まっていない段階でも構いません。`,
   path: '/contact',
 });
 

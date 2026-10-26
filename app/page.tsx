@@ -33,7 +33,7 @@ const REPRESENTATIVE_NAME_FOR_SEARCH = siteConfig.representative.name.replace(/\
 
 export const metadata = buildPageMetadata({
   title: 'ホーム',
-  description: `代表：${REPRESENTATIVE_NAME_FOR_SEARCH}（中小企業診断士）。財務・資金、組織・人事、営業・売上、IT・システムの経営相談を、現場に入って形にします。掲げているのは「${siteConfig.catchphrase}」。`,
+  description: `代表：${REPRESENTATIVE_NAME_FOR_SEARCH}（中小企業診断士）。財務・資金、組織・人事、営業・マーケティング、IT・システムの経営相談を、現場に入って形にします。掲げているのは「${siteConfig.catchphrase}」。`,
   path: '/',
 });
 
@@ -139,7 +139,7 @@ export default async function HomePage() {
             <p className="mt-7 max-w-2xl text-sm leading-loose text-brand-ink sm:text-base">
 口だけでは、会社は変わらない。
 
-だから「{siteConfig.catchphrase}」を掲げています。提案して終わりにはせず、実際に現場へ入って手を動かすところまでやる。財務・資金、組織・人事、営業・売上、IT・システム。抱えている課題がどれであっても、最後は御社だけで回せる状態を目指します。
+だから「{siteConfig.catchphrase}」を掲げています。提案して終わりにはせず、実際に現場へ入って手を動かすところまでやる。財務・資金、組織・人事、営業・マーケティング、IT・システム。抱えている課題がどれであっても、最後は御社だけで回せる状態を目指します。
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <PrimaryCta
