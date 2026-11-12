@@ -58,6 +58,8 @@ export async function generateMetadata({ params }: BlogDetailProps): Promise<Met
     // description は excerpt を使う（改行はメタタグ向けに空白へ正規化。未入力ならサイト共通の説明文）
     description: post.excerpt.replace(/\s+/g, ' ').trim() || siteConfig.description,
     path: buildBlogPostHref(post.id),
+    // 記事ページのタイトルは microCMS のタイトルだけにする（「｜屋号」を付けない理由は lib/metadata.ts）
+    withSiteName: false,
   });
 
   return {
