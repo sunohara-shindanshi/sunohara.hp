@@ -51,9 +51,9 @@ export default function ServicesPage() {
           <ol className="mt-8 grid gap-6 md:grid-cols-4">
             {[
               { step: 'お問い合わせ', body: 'お問い合わせフォームからご連絡ください。' },
-              { step: 'ヒアリング', body: '現状と、いちばん困っていることを伺います。' },
+              { step: 'ヒアリング', body: '現状と課題を伺います。対面、オンラインのどちらも可能です。' },
               { step: '現場確認・ご提案', body: '実際の現場を拝見し、支援範囲と進め方をご提案します。' },
-              { step: '支援開始', body: 'ご契約後、決めた進め方に沿って併走します。' },
+              { step: '支援開始', body: 'ご契約後、課題解決のために様々な施策を実行します。' },
             ].map((item, index) => (
               <li key={item.step} className="border-t border-brand-accentsoft pt-5">
                 <p className="font-display text-sm text-brand-accent">
@@ -74,7 +74,7 @@ export default function ServicesPage() {
 
       {/* コンテンツを読み終えた後の CTA */}
       <CtaSection
-        heading="自社に必要な支援が分からない、から始めてOKです"
+        heading="自社に必要な支援が分からなくても問題ありません。"
         lead="4つの領域のどれに当てはまるか判断がつかなくても構いません。現状を伺い、優先順位から一緒に整理します。"
         buttonLabel="支援について相談する"
       />
