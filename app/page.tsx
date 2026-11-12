@@ -137,7 +137,7 @@ export default async function HomePage() {
               {siteConfig.catchphrase}
             </h1>
             <p className="mt-7 max-w-2xl text-sm leading-loose text-brand-ink sm:text-base">
-営業、財務、人事、IT—————すべの領域を「実行レベル」で提供し、中小企業の課題を解決します。
+営業、財務、人事、IT———<br />すべの領域を「実行レベル」で提供し、中小企業の課題を解決します。
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <PrimaryCta
